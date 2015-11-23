@@ -1,0 +1,50 @@
+<launch>
+  <!-- Diff drive controller parameters -->
+  <rosparam command="load" file="$(find mrp2_controller_configuration)/config/mobile_base_controller.yaml"/>
+
+  <!-- Load default controllers -->
+  <include file="$(find mrp2_controller_configuration)/launch/default_controllers.launch"/>
+
+  <!-- Robot state publisher -->
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="50.0"/>
+    <param name="tf_prefix" type="string" value=""/>
+  </node>
+
+  <!-- Twist mux -->
+  <include file="$(find mrp2_bringup)/launch/twist_mux.launch"/>
+
+  <!-- Joystick controller -->
+  <include file="$(find mrp2_bringup)/launch/joystick_teleop.launch"/>
+  <!--<include file="$(find mrp2_bringup)/launch/starter_gazebo.launch"/>-->
+
+  <node name="mrp2_hardware" pkg="mrp2_hardware" type="mrp2_hardware" output="screen" />
+
+  <!-- Diagnostic Analyzer -->
+  <node pkg="mrp2_analyzer" type="mrp2_diag_publisher.py" name="mrp2_diag_publisher" />
+
+  <node pkg="diagnostic_aggregator" type="aggregator_node" name="diag_agg" >
+    <rosparam command="load"
+              file="$(find mrp2_analyzer)/test/mrp2_analyzer_load.yaml" />
+  </node>
+
+  <!--<node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf">
+    <remap from="odom" to="mobile_base_controller/odom"/>
+    <param name="output_frame" value="odom"/>
+    <param name="freq" value="30.0"/>
+    <param name="sensor_timeout" value="1.0"/>
+    <param name="odom_used" value="true"/>
+    <param name="imu_used" value="true"/>
+    <param name="vo_used" value="false"/>
+    <param name="debug" value="true"/>
+    <param name="self_diagnose" value="false"/>
+  </node>-->
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization">
+	<rosparam command="load" file="$(find mrp2_bringup)/config/robot_localization.yaml"/>
+  </node>
+
+ <node pkg="mrp2_bumpers" type="mrp2_bumpers" name="mrp2_bumpers_node">
+ </node>
+  <!--<node name="odometry_manager_node" pkg="motion_controller" type="odometry_manager_node">
+  </node>-->
+</launch>
