@@ -1,0 +1,25 @@
+<launch>
+  <arg name="imu_name" default="um7" />
+
+  <include file="$(find mrp2_description)/launch/description.launch" />
+  
+  <node pkg="mrp2_hardware" type="mrp2_hardware" name="mrp2_hardware" />
+
+  <node pkg="mrp2_bumpers" type="mrp2_bumpers" name="mrp2_bumpers_node" />
+
+  <include file="$(find mrp2_bringup)/launch/$(arg robot)/$(arg robot).launch" />
+
+  <!-- Differential controller and basic localization -->
+  <include file="$(find mrp2_control)/launch/controls.launch" />
+
+  <!-- Teleoperation via joystick and rviz interactive markers -->
+  <include file="$(find mrp2_control)/launch/teleop.launch" />
+
+  <!-- Diagnostic Analyzer -->
+  <node pkg="mrp2_analyzer" type="mrp2_diag_publisher.py" name="mrp2_diag_publisher" />
+
+  <node pkg="diagnostic_aggregator" type="aggregator_node" name="diagnostic_aggregator" >
+    <rosparam command="load" file="$(find mrp2_analyzer)/test/mrp2_analyzer_load.yaml" />
+  </node>
+
+</launch>
