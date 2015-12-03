@@ -10,7 +10,6 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <run_depend>mrp2_controller_configuration</run_depend>
   <run_depend>mrp2_description</run_depend>
   <run_depend>robot_state_publisher</run_depend>
   <run_depend>twist_mux</run_depend>

@@ -1,5 +1,6 @@
 <launch>
   <arg name="imu_name" default="um7" />
+  <arg name="laser_name" default="utm30_lx" />
 
   <include file="$(find mrp2_description)/launch/description.launch" />
   
@@ -7,7 +8,8 @@
 
   <node pkg="mrp2_bumpers" type="mrp2_bumpers" name="mrp2_bumpers_node" />
 
-  <include file="$(find mrp2_bringup)/launch/$(arg robot)/$(arg robot).launch" />
+  <include file="$(find mrp2_bringup)/launch/$(arg imu_name)/$(arg imu_name).launch" />
+  <include file="$(find mrp2_bringup)/launch/$(arg laser_name)/$(arg laser_name).launch" />
 
   <!-- Differential controller and basic localization -->
   <include file="$(find mrp2_control)/launch/controls.launch" />
