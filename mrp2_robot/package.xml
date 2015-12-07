@@ -1,14 +1,18 @@
 <?xml version="1.0"?>
 <package>
   <name>mrp2_robot</name>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
   <description>MRP2 robot description and launch files</description>
-  <maintainer email="info@pal-robotics.com">PAL Robotics</maintainer>
+  <maintainer email="akifhno@gmail.com">Akif Hacinecipoglu</maintainer>
   <license>BSD</license>
-  <author email="enrique.fernandez@pal-robotics.com">Enrique Fernandez</author>
+
+  <author email="akifhno@gmail.com">Akif Hacinecipoglu</author>
+  <url type="website">http://wiki.ros.org/Robots/MRP2</url>
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <run_depend>mrp2_bringup</run_depend>
+  <run_depend>mrp2_hardware</run_depend>
   <run_depend>mrp2_description</run_depend>
 
   <export>
