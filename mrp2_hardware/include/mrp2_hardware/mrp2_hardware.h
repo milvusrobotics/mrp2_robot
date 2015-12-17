@@ -441,7 +441,7 @@
         case MRP2_Serial::getMAXSPEED_REV:
           robot_serial->set_maxspeed_rev(config.MAX_REV);
           break;
-	      case MRP2_Serial::setMAXACCEL:
+        case MRP2_Serial::getMAXACCEL:
           robot_serial->set_max_accel(config.MAX_ACC);
           break;
         case MRP2_Serial::setBUMPER_ESTOP:
