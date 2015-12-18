@@ -122,7 +122,7 @@ class MRP2_Serial
 		getBATT_CELL_CAPACITY=53,
 		setBUMPER_ESTOP=54,
 		getBUMPER_ESTOP=55,
-		getESTOP_BTN=56
+		getESTOP_BTN=56,
 		getSONARS=83
 	}serial_t;
 		
