@@ -63,6 +63,7 @@ class MRP2_Serial
 		void set_bumper_estop(bool value);
 		bool get_bumper_estop(bool update=false);
 		bool get_estop_button(bool update=false);
+		std::vector<int> get_sonars(bool update=false);
 				
 		void update();
 
@@ -122,6 +123,7 @@ class MRP2_Serial
 		setBUMPER_ESTOP=54,
 		getBUMPER_ESTOP=55,
 		getESTOP_BTN=56
+		getSONARS=83
 	}serial_t;
 		
 	private:
@@ -143,7 +145,7 @@ class MRP2_Serial
 		bool _estop, _diag_motor_stall_l, _diag_motor_stall_r, _diag_batt_low, _diag_batt_high, _diag_motor_drvr_err, _diag_aux_lights_err;
 		double _Kp_l, _Ki_l, _Kd_l, _Kp_r, _Ki_r, _Kd_r;
 		int _position_l, _position_r;
-		std::vector<int> _bumpers, _positions, _speeds, _imax;
+		std::vector<int> _bumpers, _positions, _speeds, _imax, _sonars;
 
 		int speeds[2];
 		char sendArray[20];

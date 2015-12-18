@@ -657,6 +657,18 @@ MRP2_Serial::get_estop_button(bool update)
   return _estop_btn;
 }
 
+std::vector<int> 
+MRP2_Serial::get_sonars(bool update)
+{
+  if (update) {
+    uint8_t send_array[2];
+    //send_array[0] = '$';
+    //send_array[1] = 'S';
+    send_and_get_reply(getSONARS, send_array, 2, false);
+  }
+  return _sonars;
+}
+
 int
 MRP2_Serial::send_and_get_reply(uint8_t _command, uint8_t *send_array, int send_size, bool is_ack)
 {
