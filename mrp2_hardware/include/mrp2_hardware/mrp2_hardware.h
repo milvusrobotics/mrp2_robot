@@ -95,11 +95,14 @@
       batt_volt_pub      = nh_.advertise<std_msgs::Int32>("hw_monitor/batt_volt", 100);
       batt_current_pub   = nh_.advertise<std_msgs::Int32>("hw_monitor/batt_current", 100);
       batt_soc_pub       = nh_.advertise<std_msgs::Int32>("hw_monitor/batt_soc", 100);
-
+      sonars_pub         = nh_.advertise<std_msgs::Int32MultiArray>("sonars", 100);
       positions_pub      = nh_.advertise<std_msgs::Int32MultiArray>("encoder_positions", 100);
 
       robot_serial = new MRP2_Serial(24, 921600);
       robot_serial->update();
+
+      sonar_serial = new MRP2_Serial(17, 9600);
+      
       //printf("pos left: %d, pos right: %d, speed left: %d, speed right: %d\n", robot_serial->get_position_l(), robot_serial->get_position_r(),robot_serial->get_speed_l(), robot_serial->get_speed_r());
 
       bumper_states.resize(4);
@@ -161,7 +164,22 @@
       std_msgs::Int32MultiArray array32;
       std_msgs::Bool b;
       std_msgs::Int32 i;
+      std_msgs::Int32MultiArray sonar_array;
 
+      sonar_vals.reserve(20);
+      sonar_vals.clear();
+
+      sonar_vals = sonar_serial->get_sonars(true);
+      sonar_array.data.clear();
+      sonar_array.data.push_back(sonar_vals[0]);
+      sonar_array.data.push_back(sonar_vals[1]);
+      sonar_array.data.push_back(sonar_vals[2]);
+      sonar_array.data.push_back(sonar_vals[3]);
+      sonar_array.data.push_back(sonar_vals[4]);
+      sonar_array.data.push_back(sonar_vals[5]);
+      sonar_array.data.push_back(sonar_vals[6]);
+
+      sonars_pub.publish(sonar_array);
 
       bumper_states = robot_serial->get_bumpers(true);
       //ROS_INFO("pos l:%d,pos r:%d,spd l:%d,spd r:%d\n", robot_serial->get_position_l(true), robot_serial->get_position_r(true),robot_serial->get_speed_l(true), robot_serial->get_speed_r(true));
@@ -495,7 +513,8 @@
 
 
     MRP2_Serial *robot_serial;
-    std::vector<int> bumper_states, speeds, diags;
+    MRP2_Serial *sonar_serial;
+    std::vector<int> bumper_states, speeds, diags, sonar_vals;
 
     ros::NodeHandle nh_;
     ros::ServiceServer start_srv_;
@@ -519,6 +538,7 @@
     ros::Publisher batt_volt_pub;
     ros::Publisher batt_current_pub;
     ros::Publisher batt_soc_pub;
+    ros::Publisher sonars_pub;
 
     ros::Publisher positions_pub;
 
