@@ -5,7 +5,7 @@
 		<param name="angle_min" value="-2.08"/>
 		<param name="angle_max" value="2.08"/>
 		<param name="frame_id" value="base_laser_link"/>
-		<param name="serial_port" value="/dev/ttyACM1"/>
+		<param name="serial_port" value="/dev/mrp2_hokuyo"/>
 	</node>
 
 </launch>
