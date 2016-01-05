@@ -7,8 +7,6 @@
     <param name="sonar_port" type="string" value="/dev/mrp2_ftdi_$(optenv MRP2_SONAR_SERIAL)"/>
   </node>
 
-  <node pkg="mrp2_bumpers" type="mrp2_bumpers" name="mrp2_bumpers_node" />
-
   <group if="$(optenv MRP2_IMU 0)">
     <arg name="imu_name" default="$(optenv MRP2_IMU_NAME um6)" />
     <include file="$(find mrp2_bringup)/launch/$(arg imu_name)/$(arg imu_name).launch" />
