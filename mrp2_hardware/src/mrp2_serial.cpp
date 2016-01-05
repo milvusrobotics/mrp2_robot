@@ -1,7 +1,7 @@
 #include "mrp2_hardware/mrp2_serial.h"
 
-MRP2_Serial::MRP2_Serial (int port_nr, uint32_t baudrate)
- : _baudrate(baudrate), _port_nr(port_nr)
+MRP2_Serial::MRP2_Serial (std::string port_name, uint32_t baudrate, std::string mode)
+ : _port_name(port_name), _baudrate(baudrate), _mode(mode)
 {
   std::fill_n(speeds, 2, 0);
   e_stop = false;
@@ -10,12 +10,18 @@ MRP2_Serial::MRP2_Serial (int port_nr, uint32_t baudrate)
   tempDataIndex = 0;
   seekForChar = true;
   startChar = '$';
-  _mode[0] = '8'; _mode[1] = 'N'; _mode[2] = '1';
+  //_mode[0] = '8'; _mode[1] = 'N'; _mode[2] = '1';
+
+  //std::string mode = "8N1";
+  serial_port.open_port(_port_name, _baudrate, _mode);
+
+  //printf("MRP2_Serial: Opened Serial port at %s with %i bps.\n",_port_name.c_str(),_baudrate);
+
   
-  if(RS232_OpenComport(_port_nr,_baudrate,_mode))
+  /*if(RS232_OpenComport(_port_nr,_baudrate,_mode))
   {
     printf("Can't open comport.\n");
-  }
+  }*/
   /*else
     printf("Port %d opened with baud %d.\n", _port_nr, _baudrate);*/
 
@@ -662,7 +668,7 @@ MRP2_Serial::get_sonars(bool update)
 {
   if (update) {
     uint8_t send_array[2];
-    //send_array[0] = '$';
+    send_array[0] = 'S';
     //send_array[1] = 'S';
     send_and_get_reply(getSONARS, send_array, 2, false);
   }
@@ -684,7 +690,8 @@ MRP2_Serial::send_and_get_reply(uint8_t _command, uint8_t *send_array, int send_
   gettimeofday(&tv2, NULL);
 
   //printf("\nSent and get reply called at %f...\n", (double)(tv1.tv_sec + (double)(tv1.tv_usec/1000000.0)) );
-  int ret =RS232_SendBuf(_port_nr,send_array,send_size);
+  //int ret =RS232_SendBuf(_port_nr,send_array,send_size);
+  int ret =serial_port.send_buf(send_array,send_size);
   
   if (is_ack)
   {
@@ -728,7 +735,8 @@ MRP2_Serial::read_serial (uint8_t _command_to_read)
   //for (int i = 0; i < 10; ++i)
   //{
     
-    recievedData = RS232_PollComport(_port_nr, inData, 50);
+    //recievedData = RS232_PollComport(_port_nr, inData, 50);
+    recievedData = serial_port.poll_comport(inData, 50);
     //usleep(10);
     //printf("\nCalling process For Command %d\n", _command_to_read);
     return process(inData, recievedData, _command_to_read);
@@ -1164,6 +1172,18 @@ MRP2_Serial::execute_command(uint8_t *buf) {
   if(buf[1] == getESTOP_BTN)
   {
     _estop_btn = buf[4];
+  }
+
+  if(buf[1] == 'S')
+  {
+    _sonars.clear();
+    _sonars.push_back(buf[4] + (buf[5] << 8));
+    _sonars.push_back(buf[6] + (buf[7] << 8));
+    _sonars.push_back(buf[8] + (buf[9] << 8));
+    _sonars.push_back(buf[10] + (buf[11] << 8));
+    _sonars.push_back(buf[12] + (buf[13] << 8));
+    _sonars.push_back(buf[14] + (buf[15] << 8));
+    _sonars.push_back(buf[16] + (buf[17] << 8));
   }
 
   return buf[1];

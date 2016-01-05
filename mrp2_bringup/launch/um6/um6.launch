@@ -1,20 +1,32 @@
 <?xml version="1.0"?>
 <launch>
 
-  <node name="um7" pkg="um7" type="um7_driver">
+  <node name="um6" pkg="um6" type="um6_driver">
     <param name="port" type="string" value="/dev/mrp2_ftdi_$(optenv MRP2_IMU_SERIAL)"/>
     <param name="frame_id" type="string" value="base_imu_link"/>
-    <param name="mag_msgs" type="bool" value="true"/>
     <remap from="/imu/data" to="/imu/data_raw"/>
   </node>
 
     <!-- Filter raw gyro data into a usable IMU message -->
-  <node pkg="imu_complementary_filter" type="complementary_filter_node" name="complementary_filter_gain_node" output="screen">
+  <!--<node pkg="imu_complementary_filter" type="complementary_filter_node" name="complementary_filter_gain_node" output="screen">
     <param name="do_bias_estimation" value="true"/>
     <param name="do_adaptive_gain" value="false"/>
     <param name="use_mag" value="false"/>
     <param name="gain_acc" value="0.001"/>
     <param name="gain_mag" value="0.005"/>
-  </node>
+  </node>-->
+
+  <node pkg="imu_filter_madgwick" type="imu_filter_node" name="imu_filter">
+    <rosparam>
+      use_mag: false
+      mag_bias_x: 0
+      mag_bias_y: 0
+      mag_bias_z: 0
+      gain: 0.1
+      zeta: 0.001
+      publish_tf: false
+    </rosparam>
+  </node> 
+
 
 </launch>

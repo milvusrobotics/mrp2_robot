@@ -2,6 +2,7 @@
 #define MRP2_SERIAL_H
 
 #include "rs232.h"
+#include "serial_comm.h"
 #include "time.h"
 #include <sys/time.h>
 #include <string>
@@ -24,7 +25,7 @@ typedef enum {
 class MRP2_Serial
 {
 	public:
-		MRP2_Serial(int port_nr=4, uint32_t baudrate = 38400);
+		MRP2_Serial(std::string port_name, uint32_t baudrate = 38400, std::string mode = "8N1");
 		virtual ~MRP2_Serial ();
 		void set_speeds(int32_t left_speed, int32_t right_speed);
 		void set_speed_l(int32_t left_speed);
@@ -155,7 +156,8 @@ class MRP2_Serial
 
 		int _port_nr;
 		int _baudrate;
-		char _mode[3];
+		std::string _port_name, _mode;
+		//char _mode[3];
 
 		uint8_t tempData[1000];
 		uint8_t tempDataIndex;
@@ -165,6 +167,8 @@ class MRP2_Serial
 		uint8_t _ack_data;
 
 		double Kp,Ki,Kd,Kol;
+
+		milvus::SerialComm serial_port;
 };
 
 #endif
