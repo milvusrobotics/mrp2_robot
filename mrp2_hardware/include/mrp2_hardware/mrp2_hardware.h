@@ -110,8 +110,7 @@
         ROS_INFO("USING SONAR SENSORS");
         sonar_serial = new MRP2_Serial(this->sonar_port, this->sonar_baud, "8N1");
       }
-      //printf("pos left: %d, pos right: %d, speed left: %d, speed right: %d\n", robot_serial->get_position_l(), robot_serial->get_position_r(),robot_serial->get_speed_l(), robot_serial->get_speed_r());
-
+ 
       bumper_states.resize(4);
       bumper_states = robot_serial->get_bumpers();
 
@@ -152,13 +151,6 @@
       //robot_serial->set_bumper_estop(0);
       server.updateConfig(init_config);
 
-      //robot_serial->set_param_pid('L','P',0.75);
-      //robot_serial->set_param_pid('R','P',0.75);
-      //robot_serial->set_param_pid('L','I',0.07);
-      //robot_serial->set_param_pid('R','I',0.9);
-      //robot_serial->set_param_pid('L','D',0);
-      //robot_serial->set_param_pid('R','D',0);
-
       estop_state = robot_serial->get_estop(true);
       estop_release = false;
       robot_serial->reset_positions();
@@ -198,8 +190,6 @@
       }
 
       bumper_states = robot_serial->get_bumpers(true);
-      //ROS_INFO("pos l:%d,pos r:%d,spd l:%d,spd r:%d\n", robot_serial->get_position_l(true), robot_serial->get_position_r(true),robot_serial->get_speed_l(true), robot_serial->get_speed_r(true));
-      //ROS_INFO("b1:%d,b2:%d,b3:%d,b4:%d\n", bumper_states[0],bumper_states[1],bumper_states[2],bumper_states[3]);
       double travel_l, travel_r, heading;
 
       long last_pos_l=0, now_pos_l=0;
@@ -305,8 +295,6 @@
    {
       std_msgs::Int32 speed;
 
-      //printf("cmd_vel_0: %f, cmd_vel_1: %f\n", cmd_[0], cmd_[1]);
-
       ////// THIS IS HOW DIFF DRIVE CONTROLLER COMPUTES COMMAND VELOCITIES //////
       // Compute wheels velocities:
       //const double vel_left  = (curr_cmd.lin - curr_cmd.ang * ws / 2.0)/wr;
@@ -314,7 +302,6 @@
       ///////////////////////////////////////////////////////////////////////////
       long right_vel = cmd_[0]*(2244.0)/(2*M_PI);
       long left_vel = cmd_[1]*(2244.0)/(2*M_PI);
-      //printf("cmd_vel_0: %f, cmd_vel_1: %f, l_vel: %ld, r_vel: %ld\n", cmd_[0], cmd_[1], left_vel, right_vel);
 
       if(publish_feed)
       {
@@ -343,22 +330,6 @@
         robot_serial->set_speed_r(right_vel);
       }
 
-     /*if (running_)
-     {
-       for (unsigned int i = 0; i < NUM_JOINTS; ++i)
-       {
-         // Note that pos_[i] will be NaN for one more cycle after we start(),
-         // but that is consistent with the knowledge we have about the state
-         // of the robot.
-         pos_[i] += vel_[i]*getPeriod().toSec(); // update position
-         vel_[i] = cmd_[i]; // might add smoothing here later
-       }
-     }
-     else
-     {
-       std::fill_n(pos_, NUM_JOINTS, std::numeric_limits<double>::quiet_NaN());
-       std::fill_n(vel_, NUM_JOINTS, std::numeric_limits<double>::quiet_NaN());
-     }*/
    }
 
    bool start_callback(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res)
@@ -510,7 +481,7 @@
           break;
       }
 
-      ROS_INFO("got: %F and level: %d",config.P_L, level);
+      //ROS_INFO("got: %F and level: %d",config.P_L, level);
    }
 
    int use_sonar, sonar_baud;

@@ -15,7 +15,6 @@ int main(int argc, char **argv)
 
 	MRP2HW robot;
 
-	//ROS_WARN_STREAM("period: " << robot.getPeriod().toSec());
 	controller_manager::ControllerManager cm(&robot, nh);
 
 	ros::Rate rate(1.0 / robot.getPeriod().toSec());

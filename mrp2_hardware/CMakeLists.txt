@@ -38,7 +38,7 @@ include_directories(
   ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
 )
 
-add_library(mrp2_serial src/mrp2_serial.cpp src/serial_comm.cpp src/rs232.c)
+add_library(mrp2_serial src/mrp2_serial.cpp src/serial_comm.cpp)
 add_library(milvus_serial_comm src/serial_comm.cpp)
 add_executable(mrp2_hardware src/mrp2_hardware.cpp)
 add_dependencies(mrp2_hardware ${PROJECT_NAME}_gencfg)

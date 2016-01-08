@@ -7,7 +7,7 @@
     <remap from="/imu/data" to="/imu/data_raw"/>
   </node>
 
-    <!-- Filter raw gyro data into a usable IMU message -->
+  <!-- Filter raw gyro data into a usable IMU message -->
   <!--<node pkg="imu_complementary_filter" type="complementary_filter_node" name="complementary_filter_gain_node" output="screen">
     <param name="do_bias_estimation" value="true"/>
     <param name="do_adaptive_gain" value="false"/>
