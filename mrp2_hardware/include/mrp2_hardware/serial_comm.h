@@ -14,26 +14,6 @@
 
 namespace milvus
 {
-	//! Macro for defining an exception with a given parent (std::runtime_error should be top parent)
-/*	#define DEF_EXCEPTION(name, parent) \
-	class name : public parent { \
-  		public: \
-    	name(const char* msg) : parent(msg) {} \
-  	}
-  	 
-  	//! A standard exception
-  	DEF_EXCEPTION(Exception, std::runtime_error);
-
-	//! An exception for use when a timeout is exceeded
-  	DEF_EXCEPTION(TimeoutException, Exception);
-
-	#undef DEF_EXCEPTION*/
-
-	/*! \class SerialComm SerialComm.h "inc/SerialComm.h"
-	 *  \brief C++ serial port class for ROS.
-	 *
-	 * This class was based on the serial port code found on the hokuyo_node as suggested by Blaise Gassend on the ros-users mailling list.
-	 */
 	class SerialComm
 	{
 		public:

@@ -1,6 +1,5 @@
 #include "mrp2_hardware/serial_comm.h"
 
-//! Macro for throwing an exception with a message, passing args
 #define MILVUS_EXCEPT(except, msg, ...) \
 { \
     char buf[1000]; \
@@ -96,7 +95,7 @@ int milvus::SerialComm::open_port(std::string port_name, int baudrate, std::stri
 
   if(strlen(mode) < 3)
   {
-    printf("invalid mode:%d \"%s\"\n",strlen(mode), mode);
+    printf("invalid mode:%d \"%s\"\n",(int)strlen(mode), mode);
     return(1);
   }
 
@@ -142,11 +141,6 @@ int milvus::SerialComm::open_port(std::string port_name, int baudrate, std::stri
               break;
   }
 
-/*
-http://pubs.opengroup.org/onlinepubs/7908799/xsh/termios.h.html
-
-http://man7.org/linux/man-pages/man3/termios.3.html
-*/
 
   fd_ = open(port_name.c_str(), O_RDWR | O_NOCTTY | O_NDELAY | O_NONBLOCK);
   if(fd_==-1)
@@ -162,7 +156,7 @@ http://man7.org/linux/man-pages/man3/termios.3.html
     perror("unable to read portsettings ");
     return(1);
   }
-  memset(&new_port_settings, 0, sizeof(new_port_settings));  /* clear the new struct */
+  memset(&new_port_settings, 0, sizeof(new_port_settings));  
 
   new_port_settings.c_cflag = cbits | cpar | bstop | CLOCAL | CREAD;
   new_port_settings.c_iflag = IGNPAR;
@@ -217,7 +211,6 @@ int milvus::SerialComm::close_port()
 		perror("unable to set portstatus");
 	}
 
-	//tcsetattr(fd_, TCSANOW, &old_port_settings);
 	close(fd_);
 }
 

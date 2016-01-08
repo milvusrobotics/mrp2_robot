@@ -1,7 +1,6 @@
 #ifndef MRP2_SERIAL_H
 #define MRP2_SERIAL_H
 
-#include "rs232.h"
 #include "serial_comm.h"
 #include "time.h"
 #include <sys/time.h>
