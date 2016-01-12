@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   urdf
   std_msgs
   dynamic_reconfigure
+  std_srvs
 )
 
 generate_dynamic_reconfigure_options(
@@ -28,6 +29,8 @@ catkin_package(
     tf
     urdf
     std_msgs
+    dynamic_reconfigure
+    std_srvs
   INCLUDE_DIRS include
   #LIBRARIES ${PROJECT_NAME}
   DEPENDS gazebo
