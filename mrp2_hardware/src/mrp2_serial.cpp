@@ -791,7 +791,7 @@ MRP2_Serial::array_chopper(uint8_t *buf, int start, int end) {
 unsigned char 
 MRP2_Serial::checksum(int size)
 {
-  int ret = 0;
+  uint8_t ret = 0;
   for(int i=0; i<size; i++)
   {
     ret = ret + sendArray[i];
@@ -806,7 +806,7 @@ MRP2_Serial::checksum(int size)
 unsigned char 
 MRP2_Serial::checksum_check_array(uint8_t *arr, int size)
 {
-  int ret = 0;
+  uint8_t ret = 0;
   for(int i=0; i<size; i++)
   {
     ret = ret + arr[i];
@@ -823,7 +823,7 @@ MRP2_Serial::checksum_check_array(uint8_t *arr, int size)
 
 bool 
 MRP2_Serial::checksum_match(uint8_t *buf, int size) {
-  int checksum = 0;
+  uint8_t checksum = 0;
   int i = 0;
   for(i = 0; i<size; i++) 
   {
