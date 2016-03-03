@@ -19,6 +19,8 @@
 
   <include file="$(find mrp2_control)/launch/controls.launch" />
 
+  <rosparam command="load" file="$(find mrp2_bringup)/config/controls.yaml" />
+
   <include file="$(find mrp2_control)/launch/teleop.launch" />
 
   <!-- Diagnostic Analyzer -->

@@ -1,4 +1,3 @@
 mobile_base_controller:
-
   wheel_separation_multiplier: 1.000
-  wheel_radius_multiplier    : 1.000
+  wheel_radius_multiplier    : 0.961
