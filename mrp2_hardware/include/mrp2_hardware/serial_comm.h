@@ -9,6 +9,7 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <linux/serial.h>
 
 #define MAX_LENGTH 128
 

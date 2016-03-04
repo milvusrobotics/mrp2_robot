@@ -3,7 +3,7 @@
   <name>mrp2_display</name>
   <version>0.2.3</version>
   <description>Package for managing touch LCD panel on MRP2</description>
-  <maintainer email="bolkaraltuntas@gmail.com">Bolkar Altuntas</maintainer>
+  <maintainer email="akifhno@gmail.com">Akif Hacinecipoglu</maintainer>
   <license>BSD</license>
 
   <author email="bolkaraltuntas@gmail.com">Bolkar Altuntas</author>

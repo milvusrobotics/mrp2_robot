@@ -83,6 +83,15 @@
 #define	GENIE_OBJ_COLORPICKER		32
 #define	GENIE_OBJ_USERBUTTON		33
 
+//Pin modes
+#define PIN_INP    0
+#define PIN_INP_HI 1
+#define PIN_INP_LO 2
+#define PIN_OUT    3
+#define PIN_OUT_OD 4
+#define PIN_AN     5
+#define PIN_ANVG   6
+
 // Structure to store replys returned from a display
 
 struct genieReplyStruct
@@ -117,6 +126,7 @@ extern int  genieReadObj       (int object, int index) ;
 extern int  genieWriteObj      (int object, int index, unsigned int data) ;
 extern int  genieWriteContrast (int value) ;
 extern int  genieWriteStr      (int index, char *string) ;
+extern int  genieSetPin        (int mode, int pin);
 
 extern int  genieSetup         (char *device, int baud) ;
 extern void genieClose         (void) ;

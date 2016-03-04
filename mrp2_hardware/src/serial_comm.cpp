@@ -148,6 +148,10 @@ int milvus::SerialComm::open_port(std::string port_name, int baudrate, std::stri
     perror("unable to open comport ");
     return(1);
   }
+  else
+  {
+    fcntl(fd_, F_SETFL, 0);
+  }
 
   error = tcgetattr(fd_, &old_port_settings);
   if(error==-1)
@@ -162,8 +166,8 @@ int milvus::SerialComm::open_port(std::string port_name, int baudrate, std::stri
   new_port_settings.c_iflag = IGNPAR;
   new_port_settings.c_oflag = 0;
   new_port_settings.c_lflag = 0;
-  new_port_settings.c_cc[VMIN] = 0;      /* block untill n bytes are received */
-  new_port_settings.c_cc[VTIME] = 0;     /* block untill a timer expires (n * 100 mSec.) */
+  new_port_settings.c_cc[VMIN] = 0;    
+  new_port_settings.c_cc[VTIME] = 0;    
 
   cfsetispeed(&new_port_settings, baudr);
   cfsetospeed(&new_port_settings, baudr);
@@ -182,14 +186,15 @@ int milvus::SerialComm::open_port(std::string port_name, int baudrate, std::stri
     return(1);
   }
 
-  status |= TIOCM_DTR;    /* turn on DTR */
-  status |= TIOCM_RTS;    /* turn on RTS */
+  status |= TIOCM_DTR;   
+  status |= TIOCM_RTS; 
 
   if(ioctl(fd_, TIOCMSET, &status) == -1)
   {
     perror("unable to set portstatus");
     return(1);
   }
+  
 
   return(0);
 }
