@@ -1,0 +1,4 @@
+int16 pin_number
+bool pin_state
+---
+bool status
