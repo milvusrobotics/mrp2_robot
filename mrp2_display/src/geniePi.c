@@ -604,6 +604,47 @@ int genieWriteStrU (int index, char *string)
 }
 
 
+/*
+ * genieReadObj:
+ *  Send a read object command to the Genie display and get the result back
+ *********************************************************************************
+ */
+
+static int _genieSetPin (int mode, int pin)
+{
+  struct genieReplyStruct reply ;
+  unsigned int timeUp, checksum ;
+
+
+// Discard any pending replys
+
+  while (genieReplyAvail ())
+    genieGetReply (&reply) ;
+
+  geniePutchar (0xFF);
+  geniePutchar (0x90);
+  geniePutchar (0x00) ;
+  geniePutchar (mode) ;
+  geniePutchar (pin) ;
+
+
+  return -1 ;
+}
+
+int genieSetPin (int mode, int pin)
+{
+  int result ;
+ 
+  pthread_mutex_lock   (&genieMutex) ;
+    result = _genieSetPin (mode, pin) ;
+  pthread_mutex_unlock (&genieMutex) ;
+
+  return result ;
+
+}
+
+
+
 
 /*
  * genieSetup:

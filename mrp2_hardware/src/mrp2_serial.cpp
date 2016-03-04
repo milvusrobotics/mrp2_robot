@@ -1,5 +1,8 @@
 #include "mrp2_hardware/mrp2_serial.h"
 
+static const double MILLION = 1000000.0;
+static const double BILLION = 1000000000.0;
+
 MRP2_Serial::MRP2_Serial (std::string port_name, uint32_t baudrate, std::string mode)
  : _port_name(port_name), _baudrate(baudrate), _mode(mode)
 {
@@ -9,10 +12,28 @@ MRP2_Serial::MRP2_Serial (std::string port_name, uint32_t baudrate, std::string 
   dir_right=true;
   tempDataIndex = 0;
   seekForChar = true;
+  line_ok_ = true;
   startChar = '$';
   serial_port.open_port(_port_name, _baudrate, _mode);
+  use_usb_ = false;
 
 }
+
+MRP2_Serial::MRP2_Serial (uint16_t vendor_id, uint16_t product_id, int ep_in_addr, int ep_out_addr)
+ : vendor_id_(vendor_id), product_id_(product_id), ep_in_addr_(ep_in_addr), ep_out_addr_(ep_out_addr)
+{
+  std::fill_n(speeds, 2, 0);
+  e_stop = false;
+  dir_left =false;
+  dir_right=true;
+  tempDataIndex = 0;
+  seekForChar = true;
+  line_ok_ = true;
+  startChar = '$';
+  usb_port.open_device(vendor_id_, product_id_, ep_in_addr_, ep_out_addr_);
+  use_usb_ = true;
+}
+
 
 MRP2_Serial::~MRP2_Serial ()
 {
@@ -28,40 +49,32 @@ void
 MRP2_Serial::set_speeds(int32_t left_speed, int32_t right_speed)
 {
   uint8_t send_array[20];
-  if(left_speed < 0){
-    dir_left = 1;
-    left_speed *= -1;
-  }else{
-    dir_left = 0;
-  }
 
-  if(right_speed < 0){
-    dir_right = 1;
-    right_speed *= -1;
-  }else{
-    dir_right = 0;
-  }
+  left_speed *= -1;
+  right_speed *= -1;
 
-  unsigned char s1 = (unsigned char)(left_speed >> 16);
-  unsigned char s2 = (unsigned char)(left_speed >> 8);
-  unsigned char s3 = (unsigned char)left_speed;
+  unsigned char s1 = (unsigned char)(left_speed >> 24);
+  unsigned char s2 = (unsigned char)(left_speed >> 16);
+  unsigned char s3 = (unsigned char)(left_speed >> 8);
+  unsigned char s4 = (unsigned char)left_speed;
 
-  unsigned char s4 = (unsigned char)(right_speed >> 16);
-  unsigned char s5 = (unsigned char)(right_speed >> 8);
-  unsigned char s6 = (unsigned char)right_speed;
+  unsigned char s5 = (unsigned char)(right_speed >> 24);
+  unsigned char s6 = (unsigned char)(right_speed >> 16);
+  unsigned char s7 = (unsigned char)(right_speed >> 8);
+  unsigned char s8 = (unsigned char)right_speed;
   
   send_array[0] = '$';
   send_array[1] = setSPEEDS;
   send_array[2] = 8;
   send_array[3] = checksum_check_array(send_array, 3);
-  send_array[4] = dir_left;
-  send_array[5] = s1;
-  send_array[6] = s2;
-  send_array[7] = s3;
-  send_array[8] = dir_right;
-  send_array[9] = s4;
-  send_array[10] = s5;
-  send_array[11] = s6;
+  send_array[4] = s1;
+  send_array[5] = s2;
+  send_array[6] = s3;
+  send_array[7] = s4;
+  send_array[8] = s5;
+  send_array[9] = s6;
+  send_array[10] = s7;
+  send_array[11] = s8;
   send_array[12] = checksum_check_array(send_array, 12);
 
   send_and_get_reply(setSPEEDS, send_array, 13, true);
@@ -72,25 +85,22 @@ void
 MRP2_Serial::set_speed_l(int32_t left_speed)
 {
   uint8_t send_array[20];
-  if(left_speed < 0){
-    dir_left = 1;
-    left_speed *= -1;
-  }else{
-    dir_left = 0;
-  }
 
-  unsigned char s1 = (unsigned char)(left_speed >> 16);
-  unsigned char s2 = (unsigned char)(left_speed >> 8);
-  unsigned char s3 = (unsigned char)left_speed;
+  left_speed *= -1;
+
+  unsigned char s1 = (unsigned char)(left_speed >> 24);
+  unsigned char s2 = (unsigned char)(left_speed >> 16);
+  unsigned char s3 = (unsigned char)(left_speed >> 8);
+  unsigned char s4 = (unsigned char)left_speed;
   
   send_array[0] = '$';
   send_array[1] = setSPEED_L;
   send_array[2] = 4;
   send_array[3] = checksum_check_array(send_array, 3);
-  send_array[4] = dir_left;
-  send_array[5] = s1;
-  send_array[6] = s2;
-  send_array[7] = s3;
+  send_array[4] = s1;
+  send_array[5] = s2;
+  send_array[6] = s3;
+  send_array[7] = s4;
   send_array[8] = checksum_check_array(send_array, 8);
 
   send_and_get_reply(setSPEED_L, send_array, 9, true);
@@ -101,27 +111,22 @@ void
 MRP2_Serial::set_speed_r(int32_t right_speed)
 {
   uint8_t send_array[20];
-  
 
-  if(right_speed < 0){
-    dir_right = 1;
-    right_speed *= -1;
-  }else{
-    dir_right = 0;
-  }
+  right_speed *= -1;
 
-  unsigned char s4 = (unsigned char)(right_speed >> 16);
-  unsigned char s5 = (unsigned char)(right_speed >> 8);
-  unsigned char s6 = (unsigned char)right_speed;
+  unsigned char s5 = (unsigned char)(right_speed >> 24);
+  unsigned char s6 = (unsigned char)(right_speed >> 16);
+  unsigned char s7 = (unsigned char)(right_speed >> 8);
+  unsigned char s8 = (unsigned char)right_speed;
   
   send_array[0] = '$';
   send_array[1] = setSPEED_R;
   send_array[2] = 4;
   send_array[3] = checksum_check_array(send_array, 3);
-  send_array[4] = dir_right;
-  send_array[5] = s4;
-  send_array[6] = s5;
-  send_array[7] = s6;
+  send_array[4] = s5;
+  send_array[5] = s6;
+  send_array[6] = s7;
+  send_array[7] = s8;
   send_array[8] = checksum_check_array(send_array, 8);
 
   send_and_get_reply(setSPEED_R, send_array, 9, true);
@@ -129,11 +134,24 @@ MRP2_Serial::set_speed_r(int32_t right_speed)
 }
 
 void
-MRP2_Serial::set_param_pid(char side, char param, double value)
+MRP2_Serial::set_param_pid(char side, char param, float value)
 {
-  uint32_t data = (uint32_t)(value*10000);
+
+  //printf("Float value: %f\n", value);
   uint8_t send_array[20];
   
+  union {
+    float f;
+    unsigned char bytes[4];
+  } val;
+
+  val.f = value;
+
+
+  unsigned char fl_array[4];
+  memcpy(fl_array, &val, 4);
+
+
   if(side == 'L')
   {
     switch(param)
@@ -168,20 +186,23 @@ MRP2_Serial::set_param_pid(char side, char param, double value)
     }
   }
 
+  //printf("Side: %c, param: %c:\n", side, param);
+  //print_array(fl_array, 4);
+
   send_array[0] = '$';
   send_array[2] = 4;
   send_array[3] = checksum_check_array(send_array, 3);
-  send_array[4] = (unsigned char)(data >> 24);
-  send_array[5] = (unsigned char)(data >> 16);
-  send_array[6] = (unsigned char)(data >> 8);
-  send_array[7] = (unsigned char)data;
+  send_array[4] = fl_array[3];
+  send_array[5] = fl_array[2];
+  send_array[6] = fl_array[1];
+  send_array[7] = fl_array[0];
   send_array[8] = checksum_check_array(send_array, 8);
 
   send_and_get_reply(send_array[1], send_array, 9, true);
 }
 
 void
-MRP2_Serial::set_param_imax(char side, uint16_t value)
+MRP2_Serial::set_param_imax(char side, uint32_t value)
 {
   uint8_t send_array[20];
   
@@ -192,62 +213,71 @@ MRP2_Serial::set_param_imax(char side, uint16_t value)
   }
 
   send_array[0] = '$';  
-  send_array[2] = 2;
+  send_array[2] = 4;
   send_array[3] = checksum_check_array(send_array, 3);
-  send_array[4] = (unsigned char)(value >> 8);
-  send_array[5] = (unsigned char)value;
-  send_array[6] = checksum_check_array(send_array, 6);
+  send_array[4] = (unsigned char)(value >> 24);
+  send_array[5] = (unsigned char)(value >> 16);
+  send_array[6] = (unsigned char)(value >> 8);
+  send_array[7] = (unsigned char)value;
+  send_array[8] = checksum_check_array(send_array, 8);
 
-  send_and_get_reply(send_array[1], send_array, 7, true);
+  send_and_get_reply(send_array[1], send_array, 9, true);
 
 }
 
 void
-MRP2_Serial::set_maxspeed_fwd(uint16_t value)
+MRP2_Serial::set_maxspeed_fwd(uint32_t value)
 {
   uint8_t send_array[20];
 
   send_array[0] = '$';
   send_array[1] = setMAXSPEED_FWD;  
-  send_array[2] = 2;
+  send_array[2] = 4;
   send_array[3] = checksum_check_array(send_array, 3);
-  send_array[4] = (unsigned char)(value >> 8);
-  send_array[5] = (unsigned char)value;
-  send_array[6] = checksum_check_array(send_array, 6);
+  send_array[4] = (unsigned char)(value >> 24);
+  send_array[5] = (unsigned char)(value >> 16);
+  send_array[6] = (unsigned char)(value >> 8);
+  send_array[7] = (unsigned char)value;
+  send_array[8] = checksum_check_array(send_array, 8);
 
-  send_and_get_reply(setMAXSPEED_FWD, send_array, 7, true);
+  send_and_get_reply(setMAXSPEED_FWD, send_array, 9, true);
 }
 
 void
-MRP2_Serial::set_maxspeed_rev(uint16_t value)
+MRP2_Serial::set_maxspeed_rev(uint32_t value)
 {
   uint8_t send_array[20];
 
   send_array[0] = '$';
   send_array[1] = setMAXSPEED_REV;  
-  send_array[2] = 2;
+  send_array[2] = 4;
   send_array[3] = checksum_check_array(send_array, 3);
-  send_array[4] = (unsigned char)(value >> 8);
-  send_array[5] = (unsigned char)value;
-  send_array[6] = checksum_check_array(send_array, 6);
+  send_array[4] = (unsigned char)(value >> 24);
+  send_array[5] = (unsigned char)(value >> 16);
+  send_array[6] = (unsigned char)(value >> 8);
+  send_array[7] = (unsigned char)value;
+  send_array[8] = checksum_check_array(send_array, 8);
 
-  send_and_get_reply(setMAXSPEED_REV, send_array, 7, true);
+  send_and_get_reply(setMAXSPEED_REV, send_array, 9, true);
 }
 
 void
-MRP2_Serial::set_max_accel(uint16_t value)
+MRP2_Serial::set_max_accel(uint32_t value)
 {
   uint8_t send_array[20];
 
   send_array[0] = '$';
   send_array[1] = setMAXACCEL;  
-  send_array[2] = 2;
+  send_array[2] = 4;
   send_array[3] = checksum_check_array(send_array, 3);
-  send_array[4] = (unsigned char)(value >> 8);
-  send_array[5] = (unsigned char)value;
-  send_array[6] = checksum_check_array(send_array, 6);
+  send_array[4] = (unsigned char)(value >> 24);
+  send_array[5] = (unsigned char)(value >> 16);
+  send_array[6] = (unsigned char)(value >> 8);
+  send_array[7] = (unsigned char)value;
+  send_array[8] = checksum_check_array(send_array, 8);
 
-  send_and_get_reply(setMAXACCEL, send_array, 7, true);
+
+  send_and_get_reply(setMAXACCEL, send_array, 9, true);
 }
 
 void
@@ -315,7 +345,7 @@ MRP2_Serial::get_speed_r(bool update)
   return _speed_r;
 }
 
-double
+float
 MRP2_Serial::get_param_pid(char side, char param, bool update)
 {
   uint8_t send_array[2];
@@ -661,48 +691,116 @@ int
 MRP2_Serial::send_and_get_reply(uint8_t _command, uint8_t *send_array, int send_size, bool is_ack)
 {
   struct timeval  tv1, tv2;
+  struct timespec ctv1, ctv2;
 
-  time_t time_1 = time(0);
-  time_t time_2 = time(0);
   double _time_diff = 0;
   int _ret_val = 0;
-  double _time_out = 0.1;
+  double _time_out = 0.05;
+
+  gettimeofday(&tv1, NULL);
+  
+  //printf("%ld.%06ld - SAGR called: %d\n", tv1.tv_sec, tv1.tv_usec, _command);
+  while (!line_ok_)
+  {
+    usleep(1);
+  }
+
+  line_ok_ = false;
+
+  gettimeofday(&tv1, NULL);
+
+  //printf("%ld.%06ld - Serial send called: %d\n", tv1.tv_sec, tv1.tv_usec, _command);
+
+  if(use_usb_)
+    int ret = usb_port.write_bytes(send_array,send_size);
+  else
+    int ret = serial_port.send_buf(send_array,send_size);
 
   gettimeofday(&tv1, NULL);
   gettimeofday(&tv2, NULL);
 
-  int ret =serial_port.send_buf(send_array,send_size);
-  
+  clock_gettime(CLOCK_MONOTONIC, &ctv1);
+  clock_gettime(CLOCK_MONOTONIC, &ctv2);
+
+  //printf("%ld.%06ld - Command sent: %d\n", ctv1.tv_sec, ctv1.tv_nsec, _command);
   if (is_ack)
   {
     _ack_data = 0;
     while (_ack_data != _command && _time_diff < _time_out)
     {
       _ret_val = read_serial(ACK);
-      gettimeofday(&tv2, NULL);
-      _time_diff = (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 + (double) (tv2.tv_sec - tv1.tv_sec);
+      //gettimeofday(&tv2, NULL);
+      //_time_diff = (double) (tv2.tv_usec - tv1.tv_usec) / MILLION + (double) (tv2.tv_sec - tv1.tv_sec);
+      clock_gettime(CLOCK_MONOTONIC, &ctv2);
+      _time_diff = ctv2.tv_sec - ctv1.tv_sec + (ctv2.tv_nsec - ctv1.tv_nsec) / BILLION;
+      usleep(1);
     }
+    line_ok_ = true;
+    /*if(_ack_data != _command && _time_diff >= _time_out)
+      printf("ACK Timeout!, Command: %d\n", _command);
+    else if (_ack_data == _command && _time_diff < _time_out)
+      printf("%ld.%06ld - Command reply received: %d\n", ctv2.tv_sec, ctv2.tv_nsec, _command);*/
   }
   else
   {
     while (_ret_val == 0 && _time_diff < _time_out)
     {
         _ret_val = read_serial(_command);
-        gettimeofday(&tv2, NULL);
-        _time_diff = (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 + (double) (tv2.tv_sec - tv1.tv_sec);
+        //gettimeofday(&tv2, NULL);
+        //_time_diff = (double) (tv2.tv_usec - tv1.tv_usec) / MILLION + (double) (tv2.tv_sec - tv1.tv_sec);
+        clock_gettime(CLOCK_MONOTONIC, &ctv2);
+        _time_diff = ctv2.tv_sec - ctv1.tv_sec + (ctv2.tv_nsec - ctv1.tv_nsec) / BILLION;
+        usleep(1);
     }
-  }
+    line_ok_ = true;
+    /*if(_ret_val == 0 && _time_diff >= _time_out)
+      printf("Read Timeout!, Command: %d\n", _command);
+    else if (_ret_val != 0 && _time_diff < _time_out)
+      printf("%ld.%06ld - Command reply received: %d\n", ctv2.tv_sec, ctv2.tv_nsec, _command);*/
 
+  }
+  
+  
   return _ret_val;
+}
+
+bool
+MRP2_Serial::is_available ()
+{
+  return line_ok_;
 }
 
 int
 MRP2_Serial::read_serial (uint8_t _command_to_read)
 {
-  uint8_t inData[50] = {0};
+  uint8_t inData[16] = {0};
   int recievedData = 0;
-  recievedData = serial_port.poll_comport(inData, 50);
-  return process(inData, recievedData, _command_to_read);
+
+  if(use_usb_)
+    recievedData = usb_port.read_bytes(inData,16);
+  else
+    recievedData = serial_port.poll_comport(inData, 16);
+
+  if (recievedData == 0)
+    return 0;
+
+  return process_simple(inData, recievedData, _command_to_read);
+}
+
+int 
+MRP2_Serial::process_simple (uint8_t *inData, int recievedData, uint8_t _command_to_read)
+{
+  int ret_val_ = 0;
+
+  uint8_t* ret_data_ = new uint8_t[recievedData];
+  memcpy( ret_data_, inData, recievedData * sizeof(uint8_t) );
+
+  int data_len = first_validator(ret_data_);
+  if(second_validator(ret_data_, data_len) != -1)
+  {
+      ret_val_ = execute_command(ret_data_);
+  }
+  return ret_val_;
 }
 
 int 
@@ -745,9 +843,7 @@ MRP2_Serial::process (uint8_t *inData, int recievedData, uint8_t _command_to_rea
         if (tempData[1] != _command_to_read)
         {
           tempData[0] = '0';
-          return _ret_val;
-
-          
+          return _ret_val;          
         }
       }
 
@@ -774,6 +870,7 @@ MRP2_Serial::process (uint8_t *inData, int recievedData, uint8_t _command_to_rea
       }
 
   }
+
   return _ret_val;
 
 }
@@ -884,6 +981,11 @@ MRP2_Serial::find_message_start(uint8_t *buf,  int lastIndex) {
 int 
 MRP2_Serial::execute_command(uint8_t *buf) {
 
+  union{
+    float f;
+    uint8_t bytes[4];
+  }val;
+
   if(buf[1] == getBUMPERS)
   {
     _bumpers.clear();
@@ -901,23 +1003,11 @@ MRP2_Serial::execute_command(uint8_t *buf) {
 
   if(buf[1] == getSPEEDS)
   {
-      int l_speed = buf[5];
-      l_speed += (buf[6] << 8);
-      if(buf[4] == 1)
-      {
-        l_speed *= -1;
-      }
-        
-
-      int r_speed= buf[8];
-      r_speed += (buf[9] << 8);
-      if(buf[7] == 1)
-      {
-        r_speed *= -1;
-      }
+      int l_speed = buf[4] + (buf[5] << 8) + (buf[6] << 16) + (buf[7] << 24); 
+      int r_speed= buf[8] + (buf[9] << 8) + (buf[10] << 16) + (buf[11] << 24); 
       
-      _speed_l = l_speed;
-      _speed_r = r_speed;
+      _speed_l = l_speed*-1;
+      _speed_r = r_speed*-1;
       _speeds.clear();
       _speeds.push_back(_speed_l);
       _speeds.push_back(_speed_r);
@@ -926,14 +1016,9 @@ MRP2_Serial::execute_command(uint8_t *buf) {
 
   if(buf[1] == getSPEED_L)
   {
-      int l_speed = buf[5];
-      l_speed += (buf[6] << 8);
-      if(buf[4] == 1)
-      {
-        l_speed *= -1;
-      }
+      int l_speed = buf[4] + (buf[5] << 8) + (buf[6] << 16) + (buf[7] << 24); 
       
-      _speed_l = l_speed;
+      _speed_l = l_speed*-1;
       _speeds.clear();
       _speeds.push_back(_speed_l);
       _speeds.push_back(_speed_r);
@@ -942,14 +1027,9 @@ MRP2_Serial::execute_command(uint8_t *buf) {
 
   if(buf[1] == getSPEED_R)
   {
-      int r_speed = buf[5];
-      r_speed += (buf[6] << 8);
-      if(buf[4] == 1)
-      {
-        r_speed *= -1;
-      }
+      int r_speed = buf[4] + (buf[5] << 8) + (buf[6] << 16) + (buf[7] << 24); 
       
-      _speed_r = r_speed;
+      _speed_r = r_speed*-1;
       _speeds.clear();
       _speeds.push_back(_speed_l);
       _speeds.push_back(_speed_r);
@@ -958,43 +1038,70 @@ MRP2_Serial::execute_command(uint8_t *buf) {
 
   if(buf[1] == getPARAM_KP_L)
   {
-    int i = buf[4] + (buf[5] << 8) + (buf[6] << 16) + (buf[7] << 24);
-    _Kp_l = (double)i/10000;
+    //printf("KP_L: 4:%d, 5:%d, 6:%d, 7:%d\n", buf[4], buf[5], buf[6], buf[7]);
+
+    val.bytes[0] = buf[4];
+    val.bytes[1] = buf[5];
+    val.bytes[2] = buf[6];
+    val.bytes[3] = buf[7];
+
+    _Kp_l = val.f;
+    //printf("kp_l:%f\n", _Kp_l);
   }
 
   if(buf[1] == getPARAM_KI_L)
   {
-    int i = buf[4] + (buf[5] << 8) + (buf[6] << 16) + (buf[7] << 24);
-    _Ki_l = (double)i/10000;
+    val.bytes[0] = buf[4];
+    val.bytes[1] = buf[5];
+    val.bytes[2] = buf[6];
+    val.bytes[3] = buf[7];
+    _Ki_l = val.f;
+     //printf("ki_l:%f\n", _Ki_l);
   }
 
   if(buf[1] == getPARAM_KD_L)
   {
-    int i = buf[4] + (buf[5] << 8) + (buf[6] << 16) + (buf[7] << 24);
-    _Kd_l = (double)i/10000;
+    val.bytes[0] = buf[4];
+    val.bytes[1] = buf[5];
+    val.bytes[2] = buf[6];
+    val.bytes[3] = buf[7];
+    _Kd_l = val.f;
+     //printf("kd_l:%f\n", _Kd_l);
   }
 
   if(buf[1] == getPARAM_KP_R)
   {
-    int i = buf[4] + (buf[5] << 8) + (buf[6] << 16) + (buf[7] << 24);
-    _Kp_r = (double)i/10000;
+    val.bytes[0] = buf[4];
+    val.bytes[1] = buf[5];
+    val.bytes[2] = buf[6];
+    val.bytes[3] = buf[7];
+    _Kp_r = val.f;
+     //printf("kp_r:%f\n", _Kp_r);
   }
 
   if(buf[1] == getPARAM_KI_R)
   {
-    int i = buf[4] + (buf[5] << 8) + (buf[6] << 16) + (buf[7] << 24);
-    _Ki_r = (double)i/10000;
+    val.bytes[0] = buf[4];
+    val.bytes[1] = buf[5];
+    val.bytes[2] = buf[6];
+    val.bytes[3] = buf[7];
+    _Ki_r = val.f;
+    //printf("ki_r:%f\n", _Ki_r);
   }
 
   if(buf[1] == getPARAM_KD_R)
   {
-    int i = buf[4] + (buf[5] << 8) + (buf[6] << 16) + (buf[7] << 24);
-    _Kd_r = (double)i/10000;
+    val.bytes[0] = buf[4];
+    val.bytes[1] = buf[5];
+    val.bytes[2] = buf[6];
+    val.bytes[3] = buf[7];
+    _Kd_r = val.f;
+    //printf("kd_r:%f\n", _Kd_r);
   }
 
   if(buf[1] == getPARAM_IMAX_L)
   {
-    _imax_l = buf[4] + (buf[5] << 8);
+    _imax_l = buf[4] + (buf[5] << 8) + (buf[6] << 16) + (buf[7] << 24);
     _imax.clear();
     _imax.push_back(_imax_l);
     _imax.push_back(_imax_r);
@@ -1002,7 +1109,7 @@ MRP2_Serial::execute_command(uint8_t *buf) {
 
   if(buf[1] == getPARAM_IMAX_R)
   {
-    _imax_r = buf[4] + (buf[5] << 8);
+    _imax_r = buf[4] + (buf[5] << 8) + (buf[6] << 16) + (buf[7] << 24);
     _imax.clear();
     _imax.push_back(_imax_l);
     _imax.push_back(_imax_r);
@@ -1010,20 +1117,17 @@ MRP2_Serial::execute_command(uint8_t *buf) {
 
   if(buf[1] == getMAXSPEED_FWD)
   {
-    _maxspeed_fwd = buf[4];
-    _maxspeed_fwd += (buf[5] << 8);
+    _maxspeed_fwd = buf[4] + (buf[5] << 8) + (buf[6] << 16) + (buf[7] << 24);
   }
 
   if(buf[1] == getMAXSPEED_REV)
   {
-    _maxspeed_rev = buf[4];
-    _maxspeed_rev += (buf[5] << 8);
+    _maxspeed_rev = buf[4] + (buf[5] << 8) + (buf[6] << 16) + (buf[7] << 24);
   }
 
   if(buf[1] == getMAXACCEL)
   {
-    _maxaccel = buf[4];
-    _maxaccel += (buf[5] << 8);
+    _maxaccel = buf[4] + (buf[5] << 8) + (buf[6] << 16) + (buf[7] << 24);
   }
 
   if(buf[1] == getBATT_VOLT)
@@ -1125,7 +1229,8 @@ MRP2_Serial::print_array(uint8_t *buf, int length) {
   int i = 0;
   for (i = 0; i < length; i++)
   {
-      printf("%02x ",buf[i] );
+      //printf("%02x ",buf[i] );
+    printf("%d ",buf[i] );
   }
   printf("\n");
 };

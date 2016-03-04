@@ -13,7 +13,11 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   dynamic_reconfigure
   std_srvs
+  nav_msgs
 )
+
+find_package(PkgConfig REQUIRED)
+pkg_search_module(LIBUSB REQUIRED libusb-1.0)
 
 generate_dynamic_reconfigure_options(
   cfg/Parameters.cfg
@@ -31,22 +35,24 @@ catkin_package(
     std_msgs
     dynamic_reconfigure
     std_srvs
+    nav_msgs
   INCLUDE_DIRS include
   #LIBRARIES ${PROJECT_NAME}
   DEPENDS gazebo
 )
 
 include_directories(
-  include ${catkin_INCLUDE_DIRS}
+  include ${catkin_INCLUDE_DIRS} ${LIBUSB_INCLUDE_DIRS}
   ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
 )
 
-add_library(mrp2_serial src/mrp2_serial.cpp src/serial_comm.cpp)
+add_library(mrp2_serial src/mrp2_serial.cpp src/serial_comm.cpp src/usb_comm.cpp)
 add_library(milvus_serial_comm src/serial_comm.cpp)
+add_library(milvus_usb_comm src/usb_comm.cpp)
 add_executable(mrp2_hardware src/mrp2_hardware.cpp)
 add_dependencies(mrp2_hardware ${PROJECT_NAME}_gencfg)
 
-target_link_libraries(mrp2_hardware mrp2_serial	${catkin_LIBRARIES})
+target_link_libraries(mrp2_hardware mrp2_serial	${catkin_LIBRARIES} ${LIBUSB_LIBRARIES})
 
 install(TARGETS mrp2_serial
     ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

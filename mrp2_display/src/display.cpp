@@ -17,16 +17,26 @@
 #include "std_msgs/MultiArrayLayout.h"
 #include "std_msgs/MultiArrayDimension.h"
 #include "std_msgs/Int32MultiArray.h"
-#include "std_msgs/Float32.h"
+#include "std_msgs/Int32.h"
+#include "mrp2_display/gpio.h"
 
 ros::Subscriber bumpers_sub;
 ros::Subscriber battery_voltage_sub;
 ros::Subscriber battery_soc_sub;
 
+ros::Publisher inputs_pub;
+
 /*
  * resetDisplay:
  *********************************************************************************
  */
+
+bool add(mrp2_display::gpio::Request &req, mrp2_display::gpio::Response &res){
+
+	genieWriteObj(GENIE_OBJ_PINOUTPUT, req.pin_number, req.pin_state);
+	res.status = true;
+	return true;
+}
 
 static void resetDisplay (void)
 {
@@ -63,21 +73,23 @@ void handleGenieEvent(struct genieReplyStruct *reply)
 }
 
 
-void batteryVoltageCallback(const std_msgs::Float32::ConstPtr& voltage)
+void batteryVoltageCallback(const std_msgs::Int32::ConstPtr& voltage)
 {
 	char buf[32];
 	std_msgs::String msg;
 
+	double d = (double)(voltage->data)/1000;
 	std::stringstream ss;
-	ss << voltage->data;
+	ss << d;
+	ss.precision(2);
 	msg.data = ss.str();
 
- 	sprintf(buf, "%s", msg.data.c_str()) ;
+ 	sprintf(buf, "%s ", msg.data.c_str()) ;
 
  	genieWriteStr(0, buf);
 }
 
-void batterySOCCallback(const std_msgs::Float32::ConstPtr& soc)
+void batterySOCCallback(const std_msgs::Int32::ConstPtr& soc)
 {
 	char buf[32];
 	std_msgs::String msg;
@@ -85,6 +97,7 @@ void batterySOCCallback(const std_msgs::Float32::ConstPtr& soc)
 	std::stringstream ss;
 	ss << soc->data;
 	msg.data = ss.str();
+
 
  	sprintf(buf, "%s", msg.data.c_str()) ;
 
@@ -98,7 +111,7 @@ void bumpersCallback(const std_msgs::Int32MultiArray::ConstPtr& bumpers)
 	int fr = bumpers->data[2];
 	int rl = bumpers->data[1];
 	int rr = bumpers->data[0];
-
+/*
 	if (fl)
 	{
 		genieWriteObj(GENIE_OBJ_USER_LED, 0, 1);
@@ -140,7 +153,18 @@ void bumpersCallback(const std_msgs::Int32MultiArray::ConstPtr& bumpers)
 		genieWriteObj(GENIE_OBJ_SOUND, 1, 100);
 		genieWriteObj(GENIE_OBJ_SOUND, 0, 1);
 	} 
+*/
+}
 
+void pollInputs(){
+	std_msgs::Int32MultiArray array;
+
+	array.data.clear();
+
+	for(int i = 0; i<8; i++)
+		array.data.push_back (genieReadObj(GENIE_OBJ_PININPUT, i));
+
+	inputs_pub.publish(array);
 }
 
 
@@ -164,9 +188,10 @@ int main(int argc, char **argv)
 	printf ("MRP2 Display Node\n") ;
 	printf ("=============================\n") ;
 	std::string port;
-  	ros::param::param<std::string>("~port", port, "/dev/ttyUSB0");
+  	ros::param::param<std::string>("~port", port, "/dev/ttyS0");
 	// Genie display setup
-	if (genieSetup(const_cast<char*>(port.c_str()), 9600) < 0)
+	printf("Starting display at port: %s \n", port.c_str());
+	if (genieSetup(const_cast<char*>(port.c_str()), 115200) < 0)
 	{
 		fprintf (stderr, "rgb: Can't initialise Genie Display: %s\n", strerror (errno)) ;
 		return 1 ;
@@ -177,19 +202,26 @@ int main(int argc, char **argv)
 	// genieWriteObj(GENIE_OBJ_FORM, 0, 0);
 	// resetDisplay();
 
-  	bumpers_sub = n.subscribe<std_msgs::Int32MultiArray>("bumpers", 1, &bumpersCallback);
-  	battery_voltage_sub = n.subscribe<std_msgs::Float32>("battery_voltage", 1, &batteryVoltageCallback);
-  	battery_soc_sub = n.subscribe<std_msgs::Float32>("battery_soc", 1, &batterySOCCallback);
+  	//bumpers_sub = n.subscribe<std_msgs::Int32MultiArray>("bumpers", 1, &bumpersCallback);
+  	battery_voltage_sub = n.subscribe<std_msgs::Int32>("/hw_monitor/batt_volt", 1, &batteryVoltageCallback);
+  	battery_soc_sub = n.subscribe<std_msgs::Int32>("/hw_monitor/batt_soc", 1, &batterySOCCallback);
+
+  	inputs_pub = n.advertise<std_msgs::Int32MultiArray>("panel_inputs", 10);
+
+  	genieSetPin(PIN_AN, 0);
+  	genieSetPin(PIN_AN, 1);
 
 	while (ros::ok())
   	{
-
+  		
 		if (genieReplyAvail())
 		{
 			genieGetReply(&reply) ;
 			handleGenieEvent(&reply) ;
 		}
 
+		pollInputs();
+		
 		ros::spinOnce();
 
     	loop_rate.sleep();

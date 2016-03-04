@@ -2,6 +2,7 @@
 #define MRP2_SERIAL_H
 
 #include "serial_comm.h"
+#include "usb_comm.h"
 #include "time.h"
 #include <sys/time.h>
 #include <string>
@@ -25,22 +26,23 @@ class MRP2_Serial
 {
 	public:
 		MRP2_Serial(std::string port_name, uint32_t baudrate = 38400, std::string mode = "8N1");
+		MRP2_Serial(uint16_t vendor_id, uint16_t product_id, int ep_in_addr, int ep_out_addr);
 		virtual ~MRP2_Serial ();
 		void set_speeds(int32_t left_speed, int32_t right_speed);
 		void set_speed_l(int32_t left_speed);
 		void set_speed_r(int32_t right_speed);
-		void set_param_pid(char side, char param, double value);
-		void set_param_imax(char side, uint16_t value);
-		void set_maxspeed_fwd(uint16_t value);
-		void set_maxspeed_rev(uint16_t value);
-		void set_max_accel(uint16_t value);
+		void set_param_pid(char side, char param, float value);
+		void set_param_imax(char side, uint32_t value);
+		void set_maxspeed_fwd(uint32_t value);
+		void set_maxspeed_rev(uint32_t value);
+		void set_max_accel(uint32_t value);
 		//BATT SET FUNCTIONS WILL BE HERE
 		void set_estop(bool value);
 		void clear_diag(int diag);
 		std::vector<int> get_speeds(bool update=false);
 		int get_speed_l(bool update=false);
 		int get_speed_r(bool update=false);
-		double get_param_pid(char side, char param, bool update=false);
+		float get_param_pid(char side, char param, bool update=false);
 		std::vector<int> get_param_imax(char side, bool update=false);
 		int get_maxspeed_fwd(bool update=false);
 		int get_maxspeed_rev(bool update=false);
@@ -64,6 +66,7 @@ class MRP2_Serial
 		bool get_bumper_estop(bool update=false);
 		bool get_estop_button(bool update=false);
 		std::vector<int> get_sonars(bool update=false);
+		bool is_available();
 				
 		void update();
 
@@ -139,6 +142,7 @@ class MRP2_Serial
 		int send_and_get_reply(uint8_t _command, uint8_t *send_array, int send_size, bool is_ack);
 		int read_serial(uint8_t _command_to_read);
 		int process(uint8_t *inData, int recievedData, uint8_t _command_to_read);
+		int process_simple (uint8_t *inData, int recievedData, uint8_t _command_to_read);
 		bool _get_ack(serial_t command);
 
 		int _speed_l, _speed_r, _imax_l, _imax_r, _maxspeed_fwd, _maxspeed_rev, _maxaccel, _batt_volt, _batt_current, _batt_soc, _batt_cell_capacity, _bumper_estop, _estop_btn;
@@ -158,7 +162,7 @@ class MRP2_Serial
 		std::string _port_name, _mode;
 		//char _mode[3];
 
-		uint8_t tempData[1000];
+		uint8_t tempData[10000];
 		uint8_t tempDataIndex;
 
 		bool seekForChar;
@@ -168,6 +172,14 @@ class MRP2_Serial
 		double Kp,Ki,Kd,Kol;
 
 		milvus::SerialComm serial_port;
+		milvus::UsbComm usb_port;
+
+		uint16_t vendor_id_, product_id_; 
+		int ep_in_addr_, ep_out_addr_;
+
+		bool use_usb_;
+
+		bool line_ok_;
 };
 
 #endif

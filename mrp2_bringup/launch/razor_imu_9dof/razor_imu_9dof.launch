@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node name="razor_imu_9dof" pkg="razor_imu_9dof" type="imu_node.py" output="screen">
+    <rosparam file="$(find mrp2_bringup)/launch/razor_imu_9dof/razor.yaml" command="load"/>
+    <param name="port" type="string" value="/dev/mrp2_ftdi_$(optenv MRP2_IMU_SERIAL)"/>
+    <param name="frame_id" type="string" value="base_imu_link"/>
+    <remap from="/imu" to="/imu/data_raw"/>
+  </node>
+
+  <!-- Filter raw gyro data into a usable IMU message -->
+  <!--<node pkg="imu_complementary_filter" type="complementary_filter_node" name="complementary_filter_gain_node" output="screen">
+    <param name="do_bias_estimation" value="true"/>
+    <param name="do_adaptive_gain" value="false"/>
+    <param name="use_mag" value="false"/>
+    <param name="gain_acc" value="0.001"/>
+    <param name="gain_mag" value="0.005"/>
+  </node>-->
+
+  <!--<node pkg="imu_filter_madgwick" type="imu_filter_node" name="imu_filter">
+    <rosparam>
+      publish_tf: false
+      use_mag: false
+      mag_bias_x: 0
+      mag_bias_y: 0
+      mag_bias_z: 0
+      orientation_stddev: 0.01
+      gain: 0.01
+      zeta: 0.0001
+    </rosparam>
+  </node>-->
+  <!--<node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf">
+    <param name="output_frame" value="odom"/>
+    <param name="freq" value="50.0"/>
+    <param name="sensor_timeout" value="1.0"/>
+    <param name="odom_used" value="true"/>
+    <param name="imu_used" value="true"/>
+    <param name="vo_used" value="false"/>
+    <param name="debug" value="false"/>
+    <param name="self_diagnose" value="true"/>
+    <remap from="odom" to="mobile_base_controller/odom" />
+    <remap from="imu_data" to="imu/data" />
+  </node>-->
+
+</launch>
