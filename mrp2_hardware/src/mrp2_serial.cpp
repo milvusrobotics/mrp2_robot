@@ -989,10 +989,10 @@ MRP2_Serial::execute_command(uint8_t *buf) {
   if(buf[1] == getBUMPERS)
   {
     _bumpers.clear();
-    _bumpers.push_back((buf[4] >> 3) & 0x01);
-    _bumpers.push_back((buf[4] >> 2) & 0x01);
-    _bumpers.push_back((buf[4] >> 1) & 0x01);
-    _bumpers.push_back(buf[4] & 0x01);
+    _bumpers.push_back((buf[4] >> 3) & 0x01); // front left
+    _bumpers.push_back((buf[4] >> 2) & 0x01); // front right
+    _bumpers.push_back((buf[4] >> 1) & 0x01); // rear left
+    _bumpers.push_back(buf[4] & 0x01);        // rear right
 
   }
 
