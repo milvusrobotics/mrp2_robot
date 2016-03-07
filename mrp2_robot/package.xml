@@ -12,8 +12,8 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <run_depend>mrp2_bringup</run_depend>
+  <run_depend>mrp2_display</run_depend>
   <run_depend>mrp2_hardware</run_depend>
-  <run_depend>mrp2_description</run_depend>
 
   <export>
     <metapackage/>
