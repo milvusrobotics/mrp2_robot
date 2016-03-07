@@ -155,10 +155,6 @@ int main(int argc, char **argv)
 
 	ros::Rate loop_rate(10);
 
-	printf ("\n\n\n\n") ;
-	printf ("MRP2 Display Node\n") ;
-	printf ("=============================\n") ;
-
 	std::string port;
   	ros::param::param<std::string>("~port", port, "/dev/ttyS0");
 
