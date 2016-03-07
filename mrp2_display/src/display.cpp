@@ -25,29 +25,27 @@ bool last_fl = false;
 bool last_rr = false;
 bool last_rl = false;
 
+// Set-reset GPIO output pins
 bool gpio(mrp2_display::gpio::Request &req, mrp2_display::gpio::Response &res){
 
-	portPutchar(103);
-	portPutchar(req.pin_number);
-	portPutchar(req.pin_state);
+	sendCmd(GPIO_SET, (char)req.pin_number, (char)req.pin_state);
 
 	res.status = true;
 	return true;
 }
 
+// Plays beep sound
 void beep(void)
 {
-	portPutchar(104);
-	portPutchar(0);
-	portPutchar(0);
+	sendCmd(BEEP, 0, 0);
 }
 
+// Send request to read input pins and publish data
 void analog_read()
 {
 	portFlush();
-	portPutchar(102);
-	portPutchar(0);
-	portPutchar(0);	
+	sendCmd(READ_ANALOG, 0, 0);
+	lockSerial(true);
 
 	usleep(100000);
 
@@ -59,10 +57,8 @@ void analog_read()
 
 		array.data.clear();
 
-		
 		for(i = 0; i < 10; i++){
 			indata[i] = portGetchar();
-			usleep(1000);
 		}
 
 		an = indata[0] << 8;
@@ -89,32 +85,30 @@ void analog_read()
 
 		inputs_pub.publish(array);
 	}
+	lockSerial(false);
 }
 
-
+// Sets battery percentage
 void batterySOCCallback(const std_msgs::Int32::ConstPtr& soc)
 {
 	if(last_soc != soc->data){
 		last_soc = soc->data;
-	 	portPutchar(101);
-		portPutchar(last_soc);
-		portPutchar(0);	
+		sendCmd(BATTERY, (char)last_soc, 0);
 	}
 }
 
+// Changes status of bumper indicators 
 void bumpersCallback(const std_msgs::Int32MultiArray::ConstPtr& bumpers)
 {
-	int fl = bumpers->data[3];
-	int fr = bumpers->data[2];
-	int rl = bumpers->data[1];
-	int rr = bumpers->data[0];
+	uint8_t fl = bumpers->data[3];
+	uint8_t fr = bumpers->data[2];
+	uint8_t rl = bumpers->data[1];
+	uint8_t rr = bumpers->data[0];
 
 	if(last_fl != fl){
 		last_fl = fl;
-		portPutchar(97);
-		portPutchar(fl);
-		portPutchar(0);
-		usleep(10000);
+		sendCmd(BUMPER_FL, fl, 0);
+		usleep(100000);
 		
 		if(fl == 1){
 			beep();
@@ -123,10 +117,8 @@ void bumpersCallback(const std_msgs::Int32MultiArray::ConstPtr& bumpers)
 
 	if(last_fr != fr){
 		last_fr = fr;
-		portPutchar(98);
-		portPutchar(fr);
-		portPutchar(0);
-		usleep(10000);
+		sendCmd(BUMPER_FR, fr, 0);
+		usleep(100000);
 
 		if(fr == 1){
 		beep();
@@ -135,10 +127,8 @@ void bumpersCallback(const std_msgs::Int32MultiArray::ConstPtr& bumpers)
 
 	if(last_rl != rl){
 		last_rl = rl;
-		portPutchar(99);
-		portPutchar(rl);
-		portPutchar(0);
-		usleep(10000);
+		sendCmd(BUMPER_RL, rl, 0);
+		usleep(100000);
 
 		if(rl == 1){
 		beep();
@@ -147,10 +137,8 @@ void bumpersCallback(const std_msgs::Int32MultiArray::ConstPtr& bumpers)
 
 	if(last_rr != rr){
 		last_rr = rr;
-		portPutchar(100);
-		portPutchar(rr);
-		portPutchar(0);
-		usleep(10000);
+		sendCmd(BUMPER_RR, rr, 0);
+		usleep(100000);
 
 		if(rr == 1){
 		beep();
@@ -185,14 +173,21 @@ int main(int argc, char **argv)
   	bumpers_sub = n.subscribe<std_msgs::Int32MultiArray>("bumpers", 1, &bumpersCallback);
   	battery_soc_sub = n.subscribe<std_msgs::Int32>("/hw_monitor/batt_soc", 1, &batterySOCCallback);
 
-  	inputs_pub = n.advertise<std_msgs::Int32MultiArray>("panel_inputs", 5);
+  	inputs_pub = n.advertise<std_msgs::Int32MultiArray>("panel_inputs", 1);
   	ros::ServiceServer service = n.advertiseService("/panel_outputs/gpio", gpio);
 
+  	int i = 0;
 	while (ros::ok())
   	{
+  		i++;
+  		if(i == 3)
+  		{
+  			analog_read();
+  			i = 0;
+  		}
+  		
 		ros::spinOnce();
-    	loop_rate.sleep();
-    	analog_read();
+    	loop_rate.sleep();	
 	}
 	return 0 ;
 }
