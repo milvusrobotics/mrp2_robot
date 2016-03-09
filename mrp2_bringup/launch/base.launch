@@ -3,13 +3,17 @@
   <include file="$(find mrp2_description)/launch/description.launch" />
 
   <node pkg="mrp2_hardware" type="mrp2_hardware" name="mrp2_hardware" output="screen">
-    <param name="use_sonar" value="$(optenv MRP2_SONAR 0)"/>
-    <param name="sonar_port" type="string" value="/dev/mrp2_ftdi_$(optenv MRP2_SONAR_SERIAL)"/>
   </node>
 
   <node pkg="mrp2_display" type="mrp2_display_node" name="mrp2_display">
     <param name="port" value="/dev/ttyS0"/>
   </node>
+
+  <group if="$(optenv MRP2_SONAR 0)">
+    <node pkg="mrp2_hardware" type="mrp2_sonar" name="mrp2_sonar" output="screen">
+      <param name="sonar_port" type="string" value="/dev/mrp2_ftdi_$(optenv MRP2_SONAR_SERIAL)"/>
+    </node>
+  </group>
 
   <group if="$(optenv MRP2_IMU 0)">
     <arg name="imu_name" default="$(optenv MRP2_IMU_NAME um6)" />

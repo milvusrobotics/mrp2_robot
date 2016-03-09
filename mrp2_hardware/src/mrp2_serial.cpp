@@ -3,8 +3,8 @@
 static const double MILLION = 1000000.0;
 static const double BILLION = 1000000000.0;
 
-MRP2_Serial::MRP2_Serial (std::string port_name, uint32_t baudrate, std::string mode)
- : _port_name(port_name), _baudrate(baudrate), _mode(mode)
+MRP2_Serial::MRP2_Serial (std::string port_name, uint32_t baudrate, std::string mode, bool simple)
+ : _port_name(port_name), _baudrate(baudrate), _mode(mode), simple_(simple)
 {
   std::fill_n(speeds, 2, 0);
   e_stop = false;
@@ -16,11 +16,12 @@ MRP2_Serial::MRP2_Serial (std::string port_name, uint32_t baudrate, std::string 
   startChar = '$';
   serial_port.open_port(_port_name, _baudrate, _mode);
   use_usb_ = false;
+  read_timeout_ = 0.02;
 
 }
 
-MRP2_Serial::MRP2_Serial (uint16_t vendor_id, uint16_t product_id, int ep_in_addr, int ep_out_addr)
- : vendor_id_(vendor_id), product_id_(product_id), ep_in_addr_(ep_in_addr), ep_out_addr_(ep_out_addr)
+MRP2_Serial::MRP2_Serial (uint16_t vendor_id, uint16_t product_id, int ep_in_addr, int ep_out_addr, bool simple)
+ : vendor_id_(vendor_id), product_id_(product_id), ep_in_addr_(ep_in_addr), ep_out_addr_(ep_out_addr), simple_(simple)
 {
   std::fill_n(speeds, 2, 0);
   e_stop = false;
@@ -32,6 +33,7 @@ MRP2_Serial::MRP2_Serial (uint16_t vendor_id, uint16_t product_id, int ep_in_add
   startChar = '$';
   usb_port.open_device(vendor_id_, product_id_, ep_in_addr_, ep_out_addr_);
   use_usb_ = true;
+  read_timeout_ = 0.02;
 }
 
 
@@ -680,8 +682,8 @@ MRP2_Serial::get_sonars(bool update)
 {
   if (update) {
     uint8_t send_array[2];
-    send_array[0] = 'S';
-    //send_array[1] = 'S';
+    send_array[0] = '$';
+    send_array[1] = getSONARS;
     send_and_get_reply(getSONARS, send_array, 2, false);
   }
   return _sonars;
@@ -695,11 +697,11 @@ MRP2_Serial::send_and_get_reply(uint8_t _command, uint8_t *send_array, int send_
 
   double _time_diff = 0;
   int _ret_val = 0;
-  double _time_out = 0.05;
 
   gettimeofday(&tv1, NULL);
   
   //printf("%ld.%06ld - SAGR called: %d\n", tv1.tv_sec, tv1.tv_usec, _command);
+
   while (!line_ok_)
   {
     usleep(1);
@@ -723,10 +725,11 @@ MRP2_Serial::send_and_get_reply(uint8_t _command, uint8_t *send_array, int send_
   clock_gettime(CLOCK_MONOTONIC, &ctv2);
 
   //printf("%ld.%06ld - Command sent: %d\n", ctv1.tv_sec, ctv1.tv_nsec, _command);
+
   if (is_ack)
   {
     _ack_data = 0;
-    while (_ack_data != _command && _time_diff < _time_out)
+    while (_ack_data != _command && _time_diff < read_timeout_)
     {
       _ret_val = read_serial(ACK);
       //gettimeofday(&tv2, NULL);
@@ -743,8 +746,9 @@ MRP2_Serial::send_and_get_reply(uint8_t _command, uint8_t *send_array, int send_
   }
   else
   {
-    while (_ret_val == 0 && _time_diff < _time_out)
+    while (_ret_val == 0 && _time_diff < read_timeout_)
     {
+
         _ret_val = read_serial(_command);
         //gettimeofday(&tv2, NULL);
         //_time_diff = (double) (tv2.tv_usec - tv1.tv_usec) / MILLION + (double) (tv2.tv_sec - tv1.tv_sec);
@@ -773,18 +777,24 @@ MRP2_Serial::is_available ()
 int
 MRP2_Serial::read_serial (uint8_t _command_to_read)
 {
-  uint8_t inData[16] = {0};
+  uint8_t inData[24] = {0};
   int recievedData = 0;
 
   if(use_usb_)
-    recievedData = usb_port.read_bytes(inData,16);
+    recievedData = usb_port.read_bytes(inData,24);
   else
-    recievedData = serial_port.poll_comport(inData, 16);
+    recievedData = serial_port.poll_comport(inData, 24);
+
+  /*if(_command_to_read == getSONARS && recievedData > 0)
+    print_array(inData, recievedData);*/
 
   if (recievedData == 0)
     return 0;
 
-  return process_simple(inData, recievedData, _command_to_read);
+  if (simple_)
+    return process_simple(inData, recievedData, _command_to_read);
+  else
+    return process(inData, recievedData, _command_to_read);
 }
 
 int 
@@ -837,6 +847,7 @@ MRP2_Serial::process (uint8_t *inData, int recievedData, uint8_t _command_to_rea
       {
         return _ret_val;
       }
+
 
       if (data_len != -1)
       {
@@ -1207,7 +1218,7 @@ MRP2_Serial::execute_command(uint8_t *buf) {
     _estop_btn = buf[4];
   }
 
-  if(buf[1] == 'S')
+  if(buf[1] == getSONARS)
   {
     _sonars.clear();
     _sonars.push_back(buf[4] + (buf[5] << 8));
@@ -1234,3 +1245,13 @@ MRP2_Serial::print_array(uint8_t *buf, int length) {
   }
   printf("\n");
 };
+
+void 
+MRP2_Serial::set_read_timeout(double timeout){
+  read_timeout_ = timeout;
+}
+
+double 
+MRP2_Serial::get_read_timeout(void){
+  return read_timeout_;
+}
