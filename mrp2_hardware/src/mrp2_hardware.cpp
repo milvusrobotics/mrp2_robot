@@ -30,8 +30,7 @@ int main(int argc, char **argv)
 
 	MRP2HW robot;
  
-	// Get current time for use with first update
-	clock_gettime(CLOCK_MONOTONIC, &last_time_);
+	
 
 	// Start timer
 	ros::Duration desired_update_freq_ = ros::Duration(1 / loop_hz_);
@@ -42,6 +41,9 @@ int main(int argc, char **argv)
 	ros::AsyncSpinner spinner(1);
 	spinner.start();
 
+	// Get current time for use with first update
+	clock_gettime(CLOCK_MONOTONIC, &last_time_);
+	
 	while(ros::ok())
 	{
 

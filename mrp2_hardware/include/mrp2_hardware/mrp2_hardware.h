@@ -11,6 +11,7 @@
  #include <std_msgs/Bool.h>
 
  #include <nav_msgs/Odometry.h>
+ #include <sensor_msgs/Range.h>
 
  // ros_control
  #include <controller_manager/controller_manager.h>
@@ -73,13 +74,9 @@
       publish_feed = false;
 
       //registerInterface(&imu_sens_interface_);
-
+      server = new dynamic_reconfigure::Server<mrp2_hardware::ParametersConfig>(dynamic_reconfigure_mutex_, nh_);
       f = boost::bind(&MRP2HW::callback, this, _1, _2);
-      server.setCallback(f);
-
-      ros::param::param<std::string>("~sonar_port", this->sonar_port, "/dev/mrp2_ftdi_MRP2SNR001");
-      ros::param::param<int32_t>("~sonar_baud", this->sonar_baud, 9600);
-      ros::param::param<int32_t>("~use_sonar", this->use_sonar, 0);
+      server->setCallback(f);
 
       pos_reset_sub      = nh_.subscribe<std_msgs::Empty>("positions_reset", 1, &MRP2HW::positions_reset_callback, this);
       estop_clear_sub    = nh_.subscribe<std_msgs::Empty>("estop_clear", 1, &MRP2HW::estop_clear_callback, this);
@@ -108,13 +105,6 @@
       robot_serial = new MRP2_Serial("/dev/mrp2_powerboard", 921600, "8N1");
       //robot_serial = new MRP2_Serial(0x0483, 0x5740, 0x81, 0x01);
       robot_serial->update();
-
-      if (this->use_sonar)
-      {
-        sonars_pub = nh_.advertise<std_msgs::Int32MultiArray>("sonars", 100);
-        ROS_INFO("USING SONAR SENSORS");
-        sonar_serial = new MRP2_Serial(this->sonar_port, this->sonar_baud, "8N1");
-      }
  
       bumper_states.resize(4);
       bumper_states = robot_serial->get_bumpers();
@@ -156,7 +146,7 @@
       //robot_serial->set_bumper_estop(0);
 
       //boost::recursive_mutex::scoped_lock dyn_reconf_lock(dynamic_reconfigure_mutex_);
-      server.updateConfig(init_config);
+      server->updateConfig(init_config);
       //dyn_reconf_lock.unlock();
 
       estop_state = robot_serial->get_estop(true);
@@ -182,25 +172,7 @@
       std_msgs::Bool b;
       std_msgs::Int32 i;
 
-      if (this->use_sonar)
-      {
-        std_msgs::Int32MultiArray sonar_array;
-
-        sonar_vals.reserve(20);
-        sonar_vals.clear();
-
-        sonar_vals = sonar_serial->get_sonars(true);
-        sonar_array.data.clear();
-        sonar_array.data.push_back(sonar_vals[0]);
-        sonar_array.data.push_back(sonar_vals[1]);
-        sonar_array.data.push_back(sonar_vals[2]);
-        sonar_array.data.push_back(sonar_vals[3]);
-        sonar_array.data.push_back(sonar_vals[4]);
-        sonar_array.data.push_back(sonar_vals[5]);
-        sonar_array.data.push_back(sonar_vals[6]);
-
-        sonars_pub.publish(sonar_array);
-      }
+      current_time = ros::Time::now();
 
       bumper_states = robot_serial->get_bumpers(true);
       
@@ -219,8 +191,6 @@
       //pos_[0] = pos_r;
       //pos_[1] = pos_l;
 
-
-      current_time = ros::Time::now();
       double dt = (current_time - last_time).toSec();
       last_time = current_time;
 
@@ -538,10 +508,6 @@
       //ROS_INFO("got: %F and level: %d",config.P_L, level);
    }
 
-   int use_sonar, sonar_baud;
-   std::string sonar_port;
-
-
 
  private:
     hardware_interface::JointStateInterface    jnt_state_interface_;
@@ -560,8 +526,7 @@
 
 
     MRP2_Serial *robot_serial;
-    MRP2_Serial *sonar_serial;
-    std::vector<int> bumper_states, speeds, diags, sonar_vals;
+    std::vector<int> bumper_states, speeds, diags;
 
     ros::NodeHandle nh_;
     ros::ServiceServer start_srv_;
@@ -587,7 +552,6 @@
     ros::Publisher batt_volt_pub;
     ros::Publisher batt_current_pub;
     ros::Publisher batt_soc_pub;
-    ros::Publisher sonars_pub;
 
     ros::Publisher positions_pub;
 
@@ -596,9 +560,10 @@
 
     ros::Time current_time, last_time;
 
-    dynamic_reconfigure::Server<mrp2_hardware::ParametersConfig> server;
+    dynamic_reconfigure::Server<mrp2_hardware::ParametersConfig>* server;
     dynamic_reconfigure::Server<mrp2_hardware::ParametersConfig>::CallbackType f;
-    boost::mutex dynamic_reconfigure_mutex_;
+    boost::recursive_mutex dynamic_reconfigure_mutex_;
+    boost::mutex connect_mutex_;
 
     mrp2_hardware::ParametersConfig init_config;
 

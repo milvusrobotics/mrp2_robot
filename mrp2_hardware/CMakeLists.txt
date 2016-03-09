@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
   std_srvs
   nav_msgs
+  sensor_msgs
 )
 
 find_package(PkgConfig REQUIRED)
@@ -36,6 +37,7 @@ catkin_package(
     dynamic_reconfigure
     std_srvs
     nav_msgs
+    sensor_msgs
   INCLUDE_DIRS include
   #LIBRARIES ${PROJECT_NAME}
   DEPENDS gazebo
@@ -50,9 +52,11 @@ add_library(mrp2_serial src/mrp2_serial.cpp src/serial_comm.cpp src/usb_comm.cpp
 add_library(milvus_serial_comm src/serial_comm.cpp)
 add_library(milvus_usb_comm src/usb_comm.cpp)
 add_executable(mrp2_hardware src/mrp2_hardware.cpp)
+add_executable(mrp2_sonar src/mrp2_sonar.cpp)
 add_dependencies(mrp2_hardware ${PROJECT_NAME}_gencfg)
 
 target_link_libraries(mrp2_hardware mrp2_serial	${catkin_LIBRARIES} ${LIBUSB_LIBRARIES})
+target_link_libraries(mrp2_sonar mrp2_serial ${catkin_LIBRARIES} ${LIBUSB_LIBRARIES})
 
 install(TARGETS mrp2_serial
     ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

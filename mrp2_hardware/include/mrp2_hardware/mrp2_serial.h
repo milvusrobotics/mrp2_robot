@@ -25,8 +25,8 @@ typedef enum {
 class MRP2_Serial
 {
 	public:
-		MRP2_Serial(std::string port_name, uint32_t baudrate = 38400, std::string mode = "8N1");
-		MRP2_Serial(uint16_t vendor_id, uint16_t product_id, int ep_in_addr, int ep_out_addr);
+		MRP2_Serial(std::string port_name, uint32_t baudrate = 38400, std::string mode = "8N1", bool simple = true);
+		MRP2_Serial(uint16_t vendor_id, uint16_t product_id, int ep_in_addr, int ep_out_addr, bool simple = true);
 		virtual ~MRP2_Serial ();
 		void set_speeds(int32_t left_speed, int32_t right_speed);
 		void set_speed_l(int32_t left_speed);
@@ -67,6 +67,8 @@ class MRP2_Serial
 		bool get_estop_button(bool update=false);
 		std::vector<int> get_sonars(bool update=false);
 		bool is_available();
+		void set_read_timeout(double timeout);
+		double get_read_timeout(void);
 				
 		void update();
 
@@ -170,6 +172,7 @@ class MRP2_Serial
 		uint8_t _ack_data;
 
 		double Kp,Ki,Kd,Kol;
+		double read_timeout_;
 
 		milvus::SerialComm serial_port;
 		milvus::UsbComm usb_port;
@@ -180,6 +183,8 @@ class MRP2_Serial
 		bool use_usb_;
 
 		bool line_ok_;
+
+		bool simple_;
 };
 
 #endif

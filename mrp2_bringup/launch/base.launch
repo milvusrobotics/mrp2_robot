@@ -3,6 +3,9 @@
   <include file="$(find mrp2_description)/launch/description.launch" />
 
   <node pkg="mrp2_hardware" type="mrp2_hardware" name="mrp2_hardware" output="screen">
+  </node>
+
+  <node pkg="mrp2_hardware" type="mrp2_sonar" name="mrp2_sonar" output="screen">
     <param name="use_sonar" value="$(optenv MRP2_SONAR 0)"/>
     <param name="sonar_port" type="string" value="/dev/mrp2_ftdi_$(optenv MRP2_SONAR_SERIAL)"/>
   </node>
