@@ -35,7 +35,7 @@ int main(int argc, char **argv)
 	sonar_serial = new MRP2_Serial(sonar_port, sonar_baud, "8N1", false);
 	sonar_serial->set_read_timeout(0.05);
 
-    ros::Rate loop_rate(25);
+    ros::Rate loop_rate(20);
 
     while(ros::ok())
     {
@@ -51,35 +51,35 @@ int main(int argc, char **argv)
         sonar.radiation_type = sensor_msgs::Range::ULTRASOUND;
         sonar.header.stamp = ros::Time::now();
         sonar.field_of_view = 0.6108652;
-        sonar.max_range = 5;
+        sonar.max_range = 4;
         sonar.min_range = 0;
         
         sonar.header.frame_id = "base_sonar_1_link";
-        sonar.range = (float)sonar_vals[0] / 100;
+        sonar.range = ((double)sonar_vals[0] / 100);
         sonar1_pub.publish(sonar);
 
         sonar.header.frame_id = "base_sonar_2_link";
-        sonar.range = (float)sonar_vals[1] / 100;
+        sonar.range = ((double)sonar_vals[1] / 100);
         sonar2_pub.publish(sonar);
 
         sonar.header.frame_id = "base_sonar_3_link";
-        sonar.range = (float)sonar_vals[2] / 100;
+        sonar.range = ((double)sonar_vals[2] / 100);
         sonar3_pub.publish(sonar);
 
         sonar.header.frame_id = "base_sonar_4_link";
-        sonar.range = (float)sonar_vals[3] / 100;
+        sonar.range = ((double)sonar_vals[3] / 100);
         sonar4_pub.publish(sonar);
 
         sonar.header.frame_id = "base_sonar_5_link";
-        sonar.range = (float)sonar_vals[4] / 100;
+        sonar.range = ((double)sonar_vals[4] / 100);
         sonar5_pub.publish(sonar);
 
         sonar.header.frame_id = "base_sonar_6_link";
-        sonar.range = (float)sonar_vals[5] / 100;
+        sonar.range = ((double)sonar_vals[5] / 100);
         sonar6_pub.publish(sonar);
 
         sonar.header.frame_id = "base_sonar_7_link";
-        sonar.range = (float)sonar_vals[6] / 100;
+        sonar.range = ((double)sonar_vals[6] / 100);
         sonar7_pub.publish(sonar);
 
     	ros::spinOnce();
