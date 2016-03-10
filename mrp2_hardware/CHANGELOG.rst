@@ -2,8 +2,8 @@
 Changelog for package mrp2_hardware
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.4 (2016-03-10)
+------------------
 * Added udev for debian
 * Added seperate sonar package
 * Updated launch option for sonar

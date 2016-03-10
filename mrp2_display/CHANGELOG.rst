@@ -2,8 +2,8 @@
 Changelog for package mrp2_display
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.4 (2016-03-10)
+------------------
 * Updated package informations
 * Added display launch
 * Fixed display driver serial.

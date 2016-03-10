@@ -2,8 +2,8 @@
 Changelog for package mrp2_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.4 (2016-03-10)
+------------------
 * Updated launch option for sonar
 * Added seperate sonar package
 * Updated package informations
