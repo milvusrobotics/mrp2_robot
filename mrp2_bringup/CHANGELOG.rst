@@ -2,6 +2,17 @@
 Changelog for package mrp2_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Updated launch option for sonar
+* Added seperate sonar package
+* Updated package informations
+* Added display launch
+* Merged dev-ekf
+* Fixed hardware comm
+* Organized config files
+* Contributors: Akif, MRP2 Dev
+
 0.2.1 (2016-01-11)
 ------------------
 * Organized code and structure
