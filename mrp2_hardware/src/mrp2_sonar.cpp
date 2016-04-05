@@ -51,8 +51,8 @@ int main(int argc, char **argv)
         sonar.radiation_type = sensor_msgs::Range::ULTRASOUND;
         sonar.header.stamp = ros::Time::now();
         sonar.field_of_view = 0.6108652;
-        sonar.max_range = 4;
-        sonar.min_range = 0;
+        sonar.max_range = 0.4;
+        sonar.min_range = 0.02;
         
         sonar.header.frame_id = "base_sonar_1_link";
         sonar.range = ((double)sonar_vals[0] / 100);
