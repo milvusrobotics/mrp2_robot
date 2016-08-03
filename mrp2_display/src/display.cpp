@@ -16,7 +16,7 @@
 #include "mrp2_display/gpio.h"
 
 ros::Subscriber bumpers_sub;
-ros::Subscriber battery_soc_sub;
+ros::Subscriber battery_volt_sub;
 
 ros::Publisher inputs_pub;
 
@@ -177,7 +177,7 @@ int main(int argc, char **argv)
 	}
 
   	bumpers_sub = n.subscribe<std_msgs::Int32MultiArray>("bumpers", 1, &bumpersCallback);
-  	battery_soc_sub = n.subscribe<std_msgs::Int32>("/hw_monitor/batt_volt", 1, &batteryVoltCallback);
+  	battery_volt_sub = n.subscribe<std_msgs::Int32>("/hw_monitor/batt_volt", 1, &batteryVoltCallback);
 
   	inputs_pub = n.advertise<std_msgs::Int32MultiArray>("panel_inputs", 1);
   	ros::ServiceServer service = n.advertiseService("/panel_outputs/gpio", gpio);
