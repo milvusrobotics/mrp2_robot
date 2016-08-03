@@ -10,6 +10,7 @@ extern "C" {
 #define READ_ANALOG 102
 #define GPIO_SET    103
 #define BEEP        104
+#define ESTOP_BTN   105
 
 	extern int portOpen (char *device, int baud);
 	extern void portFlush (void);
