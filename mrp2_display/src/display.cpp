@@ -13,22 +13,25 @@
 #include "std_msgs/Int32MultiArray.h"
 #include "std_msgs/Int32.h"
 #include "std_msgs/Float32.h"
+#include "std_msgs/Bool.h"
 #include "mrp2_display/gpio.h"
 
 ros::Subscriber bumpers_sub;
 ros::Subscriber battery_volt_sub;
+ros::Subscriber estop_btn_sub;
 
 ros::Publisher inputs_pub;
 
 ros::Time timer_start;
 
-int last_volt = 0;
+double last_volt = 0.0;
 bool last_fr = false;
 bool last_fl = false;
 bool last_rr = false;
 bool last_rl = false;
 
 bool low_batt_alarm = false;
+bool last_estop_btn = false;
 
 // Set-reset GPIO output pins
 bool gpio(mrp2_display::gpio::Request &req, mrp2_display::gpio::Response &res){
@@ -93,13 +96,23 @@ void analog_read()
 	lockSerial(false);
 }
 
+// Changes e-stop button led on the screen
+void estopBtnCallback(const std_msgs::Bool::ConstPtr& stat)
+{
+	if(last_estop_btn != stat->data){
+		last_estop_btn = stat->data;
+		sendCmd(ESTOP_BTN, last_estop_btn, 0);
+	}
+}
+
 // Sets battery voltage
 void batteryVoltCallback(const std_msgs::Float32::ConstPtr& volt)
 {
 	if(last_volt != volt->data){
 		last_volt = volt->data;
-		sendCmd(BATTERY, (char)last_volt, 0);
-		if(last_volt <= 24.0 && low_batt_alarm == false){
+		int send = (int)(last_volt * 10 );
+		sendCmd(BATTERY, (char)send, 0);
+		if(last_volt <= 24.5 && low_batt_alarm == false){
 			low_batt_alarm = true;
 			sendCmd(BEEP, 0, 0);
 			timer_start = ros::Time::now();
@@ -178,6 +191,7 @@ int main(int argc, char **argv)
 
   	bumpers_sub = n.subscribe<std_msgs::Int32MultiArray>("bumpers", 1, &bumpersCallback);
   	battery_volt_sub = n.subscribe<std_msgs::Float32>("/hw_monitor/batt_volt", 1, &batteryVoltCallback);
+  	estop_btn_sub = n.subscribe<std_msgs::Bool>("/estop_btn", 1, &estopBtnCallback);
 
   	inputs_pub = n.advertise<std_msgs::Int32MultiArray>("panel_inputs", 1);
   	ros::ServiceServer service = n.advertiseService("/panel_outputs/gpio", gpio);
