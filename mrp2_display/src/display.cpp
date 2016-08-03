@@ -190,7 +190,7 @@ int main(int argc, char **argv)
 	}
 
   	bumpers_sub = n.subscribe<std_msgs::Int32MultiArray>("bumpers", 1, &bumpersCallback);
-  	battery_volt_sub = n.subscribe<std_msgs::Float32>("/hw_monitor/batt_volt", 1, &batteryVoltCallback);
+  	battery_volt_sub = n.subscribe<std_msgs::Float32>("/batt_volt", 1, &batteryVoltCallback);
   	estop_btn_sub = n.subscribe<std_msgs::Bool>("/estop_btn", 1, &estopBtnCallback);
 
   	inputs_pub = n.advertise<std_msgs::Int32MultiArray>("panel_inputs", 1);
