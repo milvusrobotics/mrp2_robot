@@ -12,6 +12,7 @@
 #include "std_msgs/MultiArrayDimension.h"
 #include "std_msgs/Int32MultiArray.h"
 #include "std_msgs/Int32.h"
+#include "std_msgs/Float32.h"
 #include "mrp2_display/gpio.h"
 
 ros::Subscriber bumpers_sub;
@@ -21,7 +22,7 @@ ros::Publisher inputs_pub;
 
 ros::Time timer_start;
 
-int last_soc = 0;
+int last_volt = 0;
 bool last_fr = false;
 bool last_fl = false;
 bool last_rr = false;
@@ -92,13 +93,13 @@ void analog_read()
 	lockSerial(false);
 }
 
-// Sets battery percentage
-void batterySOCCallback(const std_msgs::Int32::ConstPtr& soc)
+// Sets battery voltage
+void batteryVoltCallback(const std_msgs::Float32::ConstPtr& volt)
 {
-	if(last_soc != soc->data){
-		last_soc = soc->data;
-		sendCmd(BATTERY, (char)last_soc, 0);
-		if(last_soc <= 10 && low_batt_alarm == false){
+	if(last_volt != volt->data){
+		last_volt = volt->data;
+		sendCmd(BATTERY, (char)last_volt, 0);
+		if(last_volt <= 24.0 && low_batt_alarm == false){
 			low_batt_alarm = true;
 			sendCmd(BEEP, 0, 0);
 			timer_start = ros::Time::now();
@@ -165,7 +166,7 @@ int main(int argc, char **argv)
 	ros::Rate loop_rate(10);
 
 	std::string port;
-  	ros::param::param<std::string>("~port", port, "/dev/ttyS0");
+  	ros::param::param<std::string>("~port", port, "/dev/ttyS1");
 
 	// Serial port setup
 	printf("Starting display at port: %s \n", port.c_str());
@@ -176,7 +177,7 @@ int main(int argc, char **argv)
 	}
 
   	bumpers_sub = n.subscribe<std_msgs::Int32MultiArray>("bumpers", 1, &bumpersCallback);
-  	battery_soc_sub = n.subscribe<std_msgs::Int32>("/hw_monitor/batt_soc", 1, &batterySOCCallback);
+  	battery_soc_sub = n.subscribe<std_msgs::Int32>("/hw_monitor/batt_volt", 1, &batteryVoltCallback);
 
   	inputs_pub = n.advertise<std_msgs::Int32MultiArray>("panel_inputs", 1);
   	ros::ServiceServer service = n.advertiseService("/panel_outputs/gpio", gpio);

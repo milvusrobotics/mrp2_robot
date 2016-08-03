@@ -1,5 +1,7 @@
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", MODE="0666", SYMLINK+="mrp2_ftdi_%s{serial}"
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="5740", ATTRS{product}=="MILVUS ROBOTICS", MODE="0666", SYMLINK+="mrp2_powerboard"
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="15d1", ATTRS{idProduct}=="0000", MODE="0666", SYMLINK+="mrp2_hokuyo"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="20d2", ATTRS{idProduct}=="5740", MODE="0666", SYMLINK+="mrp2_motor_controller"
 KERNEL=="ttyS0", MODE="0666"
+KERNEL=="ttyS1", MODE="0666"
 KERNEL=="js?", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c21f", MODE="0666", SYMLINK+="mrp2_joystick"

@@ -286,35 +286,12 @@
       i.data = robot_serial->get_batt_soc(true);
       batt_soc_pub.publish(i);*/
 
-      //////////// THIS IS HOW DIFF DRIVE CONTROLLER COMPUTES ODOM //////////////
-      /// Get current wheel joint positions:
-      // const double left_wheel_cur_pos  = left_pos  * wheel_radius_;
-      // const double right_wheel_cur_pos = right_pos * wheel_radius_;
-
-      /// Estimate velocity of wheels using old and current position:
-      // const double left_wheel_est_vel  = left_wheel_cur_pos  - left_wheel_old_pos_;
-      // const double right_wheel_est_vel = right_wheel_cur_pos - right_wheel_old_pos_;
-
-      /// Update old position with current:
-      // left_wheel_old_pos_  = left_wheel_cur_pos;
-      // right_wheel_old_pos_ = right_wheel_cur_pos;
-
-      /// Compute linear and angular diff:
-      // const double linear  = (right_wheel_est_vel + left_wheel_est_vel) * 0.5 ;
-      // const double angular = (right_wheel_est_vel - left_wheel_est_vel) / wheel_separation_;
-      ///////////////////////////////////////////////////////////////////////////
-
    }
 
    void write()
    {
       std_msgs::Int32 speed;
-
-      ////// THIS IS HOW DIFF DRIVE CONTROLLER COMPUTES COMMAND VELOCITIES //////
-      // Compute wheels velocities:
-      //const double vel_left  = (curr_cmd.lin - curr_cmd.ang * ws / 2.0)/wr;
-      //const double vel_right = (curr_cmd.lin + curr_cmd.ang * ws / 2.0)/wr;
-      ///////////////////////////////////////////////////////////////////////////
+      
       long right_vel = cmd_[0]*(21600.0)/(2*M_PI);
       long left_vel = cmd_[1]*(21600.0)/(2*M_PI);
 
