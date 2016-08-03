@@ -9,6 +9,8 @@
     <param name="port" value="/dev/ttyS1"/>
   </node>
 
+  <include file="$(find roboteq)/launch/roboteq.launch" />
+
   <group if="$(optenv MRP2_SONAR 0)">
     <node pkg="mrp2_hardware" type="mrp2_sonar" name="mrp2_sonar" output="screen">
       <param name="sonar_port" type="string" value="/dev/mrp2_ftdi_$(optenv MRP2_SONAR_SERIAL)"/>
