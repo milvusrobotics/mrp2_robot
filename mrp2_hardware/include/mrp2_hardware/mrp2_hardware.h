@@ -1,4 +1,4 @@
- // ROS
+// ROS
  #include <ros/ros.h>
  #include <std_msgs/Float64.h>
  #include <std_msgs/Float32.h>
@@ -74,9 +74,9 @@
       publish_feed = false;
 
       //registerInterface(&imu_sens_interface_);
-      server = new dynamic_reconfigure::Server<mrp2_hardware::ParametersConfig>(dynamic_reconfigure_mutex_, nh_);
+      //server = new dynamic_reconfigure::Server<mrp2_hardware::ParametersConfig>(dynamic_reconfigure_mutex_, nh_);
       f = boost::bind(&MRP2HW::callback, this, _1, _2);
-      server->setCallback(f);
+      server.setCallback(f);
 
       pos_reset_sub      = nh_.subscribe<std_msgs::Empty>("positions_reset", 1, &MRP2HW::positions_reset_callback, this);
       estop_clear_sub    = nh_.subscribe<std_msgs::Empty>("estop_clear", 1, &MRP2HW::estop_clear_callback, this);
@@ -105,7 +105,7 @@
       robot_serial = new MRP2_Serial("/dev/mrp2_powerboard", 921600, "8N1");
       //robot_serial = new MRP2_Serial(0x0483, 0x5740, 0x81, 0x01);
       robot_serial->update();
- 
+
       bumper_states.resize(4);
       bumper_states = robot_serial->get_bumpers();
 
@@ -123,12 +123,12 @@
 
       imax = robot_serial->get_param_imax('L', true);
       imax = robot_serial->get_param_imax('R', true);
-      
+
       if (imax.size() < 1) {
         ROS_ERROR("MRP2_Hardware: Connection error to Powerboard. Aborting...");
         exit(0);
       }
-      
+
       init_config.IMAX_L = imax.at(0);
       init_config.IMAX_R = imax.at(1);
 
@@ -146,7 +146,7 @@
       //robot_serial->set_bumper_estop(0);
 
       //boost::recursive_mutex::scoped_lock dyn_reconf_lock(dynamic_reconfigure_mutex_);
-      server->updateConfig(init_config);
+      server.updateConfig(init_config);
       //dyn_reconf_lock.unlock();
 
       estop_state = robot_serial->get_estop(true);
@@ -175,8 +175,8 @@
       current_time = ros::Time::now();
 
       bumper_states = robot_serial->get_bumpers(true);
-      
-      
+
+
       long last_pos_l=0, now_pos_l=0;
       long last_pos_r=0, now_pos_r=0;
 
@@ -196,9 +196,9 @@
 
       double qpps_l, qpps_r;
       qpps_l = robot_serial->get_speed_l(true);
-      qpps_r = robot_serial->get_speed_r(true); 
-      //qpps_l = speeds[0]; 
-      //qpps_r = speeds[1]; 
+      qpps_r = robot_serial->get_speed_r(true);
+      //qpps_l = speeds[0];
+      //qpps_r = speeds[1];
       double speed_l = (qpps_l/(21600.0))*2*M_PI; // 2652: 11pulse x 4quadrature x 51gearratio
       double speed_r = (qpps_r/(21600.0))*2*M_PI;
       double ang_z_speed = (speed_r-speed_l)*0.102/0.478;
@@ -218,7 +218,7 @@
       odom.twist.twist.linear.y = 0;
       odom.twist.twist.angular.z = ang_z_speed;
 
-      /*std_msgs::Float32 speed_ang_msg; 
+      /*std_msgs::Float32 speed_ang_msg;
       speed_ang_msg.data = ang_z_speed;*/
 
       feedback_s_z_pub.publish(odom);
@@ -227,7 +227,7 @@
 
       pos_left += speed_l*dt;
       pos_right += speed_r*dt;
-      
+
       //ROS_INFO("sp_l: %f, sp_r: %f, pos_l: %f, pos_r: %f, n_pos_l: %ld, n_pos_r: %ld\n", speed_l, speed_r, pos_left*2244/(2*M_PI), pos_right*2244/(2*M_PI), now_pos_l, now_pos_r);
 
       pos_[0] = pos_right;
@@ -259,7 +259,7 @@
 
       i.data = robot_serial->get_batt_volt(true);
       batt_volt_pub.publish(i);
-      
+
       i.data = robot_serial->get_batt_current(true);
       batt_current_pub.publish(i);
 
@@ -267,31 +267,22 @@
       batt_soc_pub.publish(i);
 
       /*robot_serial->update_diag();
-
       b.data = robot_serial->get_diag(DIAG_MOTOR_STALL_L);
       motor_stall_l_pub.publish(b);
-
       b.data = robot_serial->get_diag(DIAG_MOTOR_STALL_R);
       motor_stall_r_pub.publish(b);
-
       b.data = robot_serial->get_diag(DIAG_BATT_LOW);
       batt_low_pub.publish(b);
-
       b.data = robot_serial->get_diag(DIAG_BATT_HIGH);
       batt_high_pub.publish(b);
-
       b.data = robot_serial->get_diag(DIAG_MOTOR_DRVR_ERR);
       controller_pub.publish(b);
-
       b.data = robot_serial->get_diag(DIAG_AUX_LIGHTS_ERR);
       aux_lights_pub.publish(b);
-
       i.data = robot_serial->get_batt_volt(true);
       batt_volt_pub.publish(i);
-
       i.data = robot_serial->get_batt_current(true);
       batt_current_pub.publish(i);
-
       i.data = robot_serial->get_batt_soc(true);
       batt_soc_pub.publish(i);*/
 
@@ -560,7 +551,7 @@
 
     ros::Time current_time, last_time;
 
-    dynamic_reconfigure::Server<mrp2_hardware::ParametersConfig>* server;
+    dynamic_reconfigure::Server<mrp2_hardware::ParametersConfig> server;
     dynamic_reconfigure::Server<mrp2_hardware::ParametersConfig>::CallbackType f;
     boost::recursive_mutex dynamic_reconfigure_mutex_;
     boost::mutex connect_mutex_;

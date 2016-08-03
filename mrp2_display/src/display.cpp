@@ -19,11 +19,15 @@ ros::Subscriber battery_soc_sub;
 
 ros::Publisher inputs_pub;
 
+ros::Time timer_start;
+
 int last_soc = 0;
 bool last_fr = false;
 bool last_fl = false;
 bool last_rr = false;
 bool last_rl = false;
+
+bool low_batt_alarm = false;
 
 // Set-reset GPIO output pins
 bool gpio(mrp2_display::gpio::Request &req, mrp2_display::gpio::Response &res){
@@ -94,6 +98,11 @@ void batterySOCCallback(const std_msgs::Int32::ConstPtr& soc)
 	if(last_soc != soc->data){
 		last_soc = soc->data;
 		sendCmd(BATTERY, (char)last_soc, 0);
+		if(last_soc <= 10 && low_batt_alarm == false){
+			low_batt_alarm = true;
+			sendCmd(BEEP, 0, 0);
+			timer_start = ros::Time::now();
+		}
 	}
 }
 
@@ -173,6 +182,7 @@ int main(int argc, char **argv)
   	ros::ServiceServer service = n.advertiseService("/panel_outputs/gpio", gpio);
 
   	int i = 0;
+
 	while (ros::ok())
   	{
   		i++;
@@ -181,6 +191,18 @@ int main(int argc, char **argv)
   			analog_read();
   			i = 0;
   		}
+
+  		if(low_batt_alarm){
+
+  			ros::Duration elapsed_time = ros::Time::now() - timer_start;
+
+  			if(elapsed_time.toSec() > 60.0){
+  				sendCmd(BEEP, 0, 0);
+  				timer_start = ros::Time::now();
+  			}
+
+  		}
+  		
   		
 		ros::spinOnce();
     	loop_rate.sleep();	
