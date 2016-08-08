@@ -239,15 +239,6 @@
       b.data = estop_button;
       estop_btn_pub.publish(b);
 
-      f.data = robot_serial->get_batt_volt(true);
-      batt_volt_pub.publish(f);
-
-      i.data = robot_serial->get_batt_current(true);
-      batt_current_pub.publish(i);
-
-      i.data = robot_serial->get_batt_soc(true);
-      batt_soc_pub.publish(i);
-
       /*robot_serial->update_diag();
       b.data = robot_serial->get_diag(DIAG_MOTOR_STALL_L);
       motor_stall_l_pub.publish(b);
@@ -298,8 +289,8 @@
         spd_array.data.push_back(0);
         spd_array.data.push_back(0);
       }else{
-        spd_array.data.push_back(cmd_[0]);
-        spd_array.data.push_back(cmd_[1]);
+        spd_array.data.push_back(cmd_[0]*60*15/(2*M_PI)); // 15: Motor Gear Ratio
+        spd_array.data.push_back(cmd_[1]*60*15/(2*M_PI)); // Unit is RPM, cmd_[0] unit is rad/s
       }
 
       sep_cmd_vel_pub.publish(spd_array);

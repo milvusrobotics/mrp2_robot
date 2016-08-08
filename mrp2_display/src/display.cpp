@@ -19,10 +19,9 @@
 ros::Subscriber bumpers_sub;
 ros::Subscriber battery_volt_sub;
 ros::Subscriber estop_btn_sub;
+ros::Subscriber estop_sub;
 
 ros::Publisher inputs_pub;
-
-ros::Time timer_start;
 
 double last_volt = 0.0;
 bool last_fr = false;
@@ -30,8 +29,8 @@ bool last_fl = false;
 bool last_rr = false;
 bool last_rl = false;
 
-bool low_batt_alarm = false;
 bool last_estop_btn = false;
+bool last_estop     = false;
 
 // Set-reset GPIO output pins
 bool gpio(mrp2_display::gpio::Request &req, mrp2_display::gpio::Response &res){
@@ -105,18 +104,30 @@ void estopBtnCallback(const std_msgs::Bool::ConstPtr& stat)
 	}
 }
 
+// Shows estop string on screen
+void estopCallback(const std_msgs::Bool::ConstPtr& stat)
+{
+	if(last_estop == false){
+		if(last_estop != stat->data){
+			last_estop = stat->data;
+			sendCmd(ESTOP, 0, 0);
+		}
+	}else{
+		if(last_estop != stat->data){
+			last_estop = stat->data;
+		}
+	}
+	
+}
+
 // Sets battery voltage
 void batteryVoltCallback(const std_msgs::Float32::ConstPtr& volt)
 {
 	if(last_volt != volt->data){
 		last_volt = volt->data;
-		int send = (int)(last_volt * 10 );
-		sendCmd(BATTERY, (char)send, 0);
-		if(last_volt <= 24.5 && low_batt_alarm == false){
-			low_batt_alarm = true;
-			sendCmd(BEEP, 0, 0);
-			timer_start = ros::Time::now();
-		}
+		uint16_t send = (uint16_t)(last_volt * 10 );
+		if(last_estop == false)
+			sendCmd(BATTERY, (uint8_t)(send >> 8), (uint8_t)send);
 	}
 }
 
@@ -192,6 +203,7 @@ int main(int argc, char **argv)
   	bumpers_sub = n.subscribe<std_msgs::Int32MultiArray>("bumpers", 1, &bumpersCallback);
   	battery_volt_sub = n.subscribe<std_msgs::Float32>("/batt_volt", 1, &batteryVoltCallback);
   	estop_btn_sub = n.subscribe<std_msgs::Bool>("/estop_btn", 1, &estopBtnCallback);
+  	estop_sub = n.subscribe<std_msgs::Bool>("/estop", 1, &estopCallback);
 
   	inputs_pub = n.advertise<std_msgs::Int32MultiArray>("panel_inputs", 1);
   	ros::ServiceServer service = n.advertiseService("/panel_outputs/gpio", gpio);
@@ -206,18 +218,6 @@ int main(int argc, char **argv)
   			analog_read();
   			i = 0;
   		}
-
-  		if(low_batt_alarm){
-
-  			ros::Duration elapsed_time = ros::Time::now() - timer_start;
-
-  			if(elapsed_time.toSec() > 60.0){
-  				sendCmd(BEEP, 0, 0);
-  				timer_start = ros::Time::now();
-  			}
-
-  		}
-  		
   		
 		ros::spinOnce();
     	loop_rate.sleep();	

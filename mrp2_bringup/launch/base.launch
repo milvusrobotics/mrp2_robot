@@ -5,7 +5,7 @@
   <node pkg="mrp2_hardware" type="mrp2_hardware" name="mrp2_hardware" output="screen">
   </node>
 
-  <node pkg="mrp2_display" type="mrp2_display_node" name="mrp2_display">
+  <node pkg="mrp2_display" type="mrp2_display_node" name="mrp2_display" output="screen">
     <param name="port" value="/dev/ttyS1"/>
   </node>
 
