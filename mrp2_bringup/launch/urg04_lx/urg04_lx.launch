@@ -6,6 +6,7 @@
 		<param name="angle_max" value="2.08"/>
 		<param name="frame_id" value="base_laser_link"/>
 		<param name="serial_port" value="/dev/mrp2_hokuyo"/>
+		<param name="time_offset" value="-0.05"/>
 	</node>
 
 </launch>
