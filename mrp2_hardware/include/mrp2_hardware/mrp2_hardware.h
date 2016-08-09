@@ -85,13 +85,6 @@
       sep_cmd_vel_pub    = nh_.advertise<std_msgs::Float32MultiArray>("motor_controller/sep_cmd_vel", 100);
 
       bumpers_pub        = nh_.advertise<std_msgs::Int32MultiArray>("bumpers", 100);
-      pos_l_pub          = nh_.advertise<std_msgs::Int32>("hw_monitor/motor_pos_l", 100);
-      pos_r_pub          = nh_.advertise<std_msgs::Int32>("hw_monitor/motor_pos_r", 100);
-      feedback_l_pub     = nh_.advertise<std_msgs::Int32>("hw_monitor/motor_feedback_l", 100);
-      feedback_r_pub     = nh_.advertise<std_msgs::Int32>("hw_monitor/motor_feedback_r", 100);
-      feedback_s_z_pub   = nh_.advertise<nav_msgs::Odometry>("hw_monitor/motor_feedback_s_z", 100);
-      ref_l_pub          = nh_.advertise<std_msgs::Int32>("hw_monitor/motor_ref_l", 100);
-      ref_r_pub          = nh_.advertise<std_msgs::Int32>("hw_monitor/motor_ref_r", 100);
       estop_pub          = nh_.advertise<std_msgs::Bool>("estop", 100);
       estop_btn_pub      = nh_.advertise<std_msgs::Bool>("estop_btn", 100);
       motor_stall_l_pub  = nh_.advertise<std_msgs::Bool>("hw_monitor/diagnostics/motor_stall_l", 100);
@@ -100,10 +93,7 @@
       batt_high_pub      = nh_.advertise<std_msgs::Bool>("hw_monitor/diagnostics/batt_high", 100);
       controller_pub     = nh_.advertise<std_msgs::Bool>("hw_monitor/diagnostics/controller", 100);
       aux_lights_pub     = nh_.advertise<std_msgs::Bool>("hw_monitor/diagnostics/aux_lights", 100);
-      batt_volt_pub      = nh_.advertise<std_msgs::Float32>("hw_monitor/batt_volt", 100);
-      batt_current_pub   = nh_.advertise<std_msgs::Int32>("hw_monitor/batt_current", 100);
-      batt_soc_pub       = nh_.advertise<std_msgs::Int32>("hw_monitor/batt_soc", 100);
-      positions_pub      = nh_.advertise<std_msgs::Int32MultiArray>("encoder_positions", 100);
+
 
       robot_serial = new MRP2_Serial("/dev/mrp2_powerboard", 921600, "8N1");
       //robot_serial = new MRP2_Serial(0x0483, 0x5740, 0x81, 0x01);
@@ -183,27 +173,7 @@
       //qpps_r = speeds[1];
       double speed_l = (qpps_l/(21600.0))*2*M_PI; // 21600: 360pulse x 4quadrature x 15gearratio
       double speed_r = (qpps_r/(21600.0))*2*M_PI; // 
-      double ang_z_speed = (speed_r-speed_l)*0.1/0.4715;
 
-      nav_msgs::Odometry odom;
-      odom.header.stamp = current_time;
-      odom.header.frame_id = "odom";
-
-      //set the position
-      odom.pose.pose.position.x = 0;
-      odom.pose.pose.position.y = 0;
-      odom.pose.pose.position.z = 0.0;
-
-      //set the velocity
-      odom.child_frame_id = "base_footprint";
-      odom.twist.twist.linear.x = 0;
-      odom.twist.twist.linear.y = 0;
-      odom.twist.twist.angular.z = ang_z_speed;
-
-      /*std_msgs::Float32 speed_ang_msg;
-      speed_ang_msg.data = ang_z_speed;*/
-
-      feedback_s_z_pub.publish(odom);
       vel_[0] = speed_r;
       vel_[1] = speed_l;
 
@@ -358,14 +328,7 @@
     ros::ServiceServer stop_srv_;
 
     ros::Publisher bumpers_pub;
-    ros::Publisher pos_l_pub;
-    ros::Publisher pos_r_pub;
-    ros::Publisher feedback_l_pub;
-    ros::Publisher feedback_r_pub;
-    ros::Publisher feedback_s_z_pub;
-    ros::Publisher feedback_s_x_pub;
-    ros::Publisher ref_l_pub;
-    ros::Publisher ref_r_pub;
+
     ros::Publisher estop_pub;
     ros::Publisher estop_btn_pub;
     ros::Publisher motor_stall_l_pub;
@@ -374,13 +337,8 @@
     ros::Publisher batt_high_pub;
     ros::Publisher controller_pub;
     ros::Publisher aux_lights_pub;
-    ros::Publisher batt_volt_pub;
-    ros::Publisher batt_current_pub;
-    ros::Publisher batt_soc_pub;
 
     ros::Publisher sep_cmd_vel_pub;
-
-    ros::Publisher positions_pub;
 
     ros::Subscriber pos_reset_sub;
     ros::Subscriber estop_clear_sub;
