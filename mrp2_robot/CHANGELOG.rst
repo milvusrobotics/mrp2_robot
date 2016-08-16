@@ -2,6 +2,9 @@
 Changelog for package mrp2_robot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.2.4 (2016-03-10)
 ------------------
 * Updated package informations

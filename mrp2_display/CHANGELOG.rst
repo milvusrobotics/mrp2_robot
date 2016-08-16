@@ -2,6 +2,15 @@
 Changelog for package mrp2_display
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed bringup
+* Fixed topic name
+* Fixed voltage and added estop button led controller
+* Minor fixes
+* Solved hw problems. Updated parameters.
+* Contributors: Bolkar Altuntas, Akif
+
 0.2.4 (2016-03-10)
 ------------------
 * Updated package informations

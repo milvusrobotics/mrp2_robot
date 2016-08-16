@@ -2,6 +2,15 @@
 Changelog for package mrp2_hardware
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Removed redundant topics
+* Fixed bringup
+* Implemented motor controller
+* Minor fixes
+* Solved hw problems. Updated parameters.
+* Contributors: Akif
+
 0.2.4 (2016-03-10)
 ------------------
 * Added udev for debian

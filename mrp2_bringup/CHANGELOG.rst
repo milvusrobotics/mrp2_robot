@@ -2,6 +2,14 @@
 Changelog for package mrp2_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Minor fixes
+* Fixed bringup
+* Implemented motor controller
+* Solved hw problems. Updated parameters.
+* Contributors: Akif
+
 0.2.4 (2016-03-10)
 ------------------
 * Updated launch option for sonar
