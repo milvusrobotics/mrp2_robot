@@ -2,8 +2,8 @@
 Changelog for package mrp2_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.5 (2016-08-16)
+------------------
 * Minor fixes
 * Fixed bringup
 * Implemented motor controller
