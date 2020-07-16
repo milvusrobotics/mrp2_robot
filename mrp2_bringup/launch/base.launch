@@ -27,17 +27,17 @@
     <include file="$(find mrp2_bringup)/launch/$(arg laser_name)/$(arg laser_name).launch" />
   </group>
 
-  <include file="$(find mrp2_control)/launch/controls.launch" />
+  <!--include file="$(find mrp2_control)/launch/controls.launch" /-->
 
   <rosparam command="load" file="$(find mrp2_bringup)/config/controls.yaml" />
 
-  <include file="$(find mrp2_control)/launch/teleop.launch" />
+  <include file="$(find mrp2_teleop)/launch/teleop.launch" />
 
-  <!-- Diagnostic Analyzer -->
+  <!-- Diagnostic Analyzer >
   <node pkg="mrp2_analyzer" type="mrp2_diag_publisher.py" name="mrp2_diag_publisher" output="screen" />
 
   <node pkg="diagnostic_aggregator" type="aggregator_node" name="diagnostic_aggregator" output="screen" >
     <rosparam command="load" file="$(find mrp2_analyzer)/config/mrp2_analyzer_load.yaml" />
-  </node>
+  </node-->
 
 </launch>
