@@ -25,3 +25,8 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 add_library(mrp2_display_serial src/serial.c)
 add_executable(mrp2_display_node src/display.cpp)
 target_link_libraries(mrp2_display_node mrp2_display_serial ${catkin_LIBRARIES})
+
+foreach(dir include src srv)
+    install(DIRECTORY ${dir}/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})
+endforeach()
