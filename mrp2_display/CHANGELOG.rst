@@ -2,6 +2,9 @@
 Changelog for package mrp2_display
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.2.5 (2016-08-16)
 ------------------
 * Fixed bringup

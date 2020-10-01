@@ -2,6 +2,9 @@
 Changelog for package mrp2_hardware
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.2.5 (2016-08-16)
 ------------------
 * Removed redundant topics
