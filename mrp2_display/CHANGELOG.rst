@@ -4,6 +4,9 @@ Changelog for package mrp2_display
 
 Forthcoming
 -----------
+* fix: missing dependency
+* updated changelogs
+* Contributors: OnurDz
 
 0.2.5 (2016-08-16)
 ------------------
