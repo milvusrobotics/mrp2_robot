@@ -2,8 +2,8 @@
 Changelog for package mrp2_display
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.6 (2020-10-06)
+------------------
 * fix version for release
 * updated changelogs
 * updated changelogs

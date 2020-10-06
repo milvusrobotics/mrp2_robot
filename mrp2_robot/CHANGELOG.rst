@@ -2,8 +2,8 @@
 Changelog for package mrp2_robot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.6 (2020-10-06)
+------------------
 * updated changelogs
 * version bump
 * updated changelogs
