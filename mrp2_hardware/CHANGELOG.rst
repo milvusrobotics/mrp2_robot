@@ -6,6 +6,11 @@ Forthcoming
 -----------
 * updated changelogs
 * updated changelogs
+* updated changelogs
+* Contributors: OnurDz
+
+* updated changelogs
+* updated changelogs
 * Contributors: OnurDz
 
 * updated changelogs

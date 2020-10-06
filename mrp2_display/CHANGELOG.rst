@@ -4,6 +4,14 @@ Changelog for package mrp2_display
 
 Forthcoming
 -----------
+* fix version for release
+* updated changelogs
+* updated changelogs
+* version bump
+* fix: missing dependency
+* updated changelogs
+* Contributors: OnurDz
+
 * updated changelogs
 * version bump
 * fix: missing dependency
