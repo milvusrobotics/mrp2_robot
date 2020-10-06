@@ -4,6 +4,11 @@ Changelog for package mrp2_robot
 
 Forthcoming
 -----------
+* version bump
+* updated changelogs
+* updated changelogs
+* Contributors: OnurDz
+
 * updated changelogs
 * Contributors: OnurDz
 

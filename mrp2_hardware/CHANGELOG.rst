@@ -5,6 +5,10 @@ Changelog for package mrp2_hardware
 Forthcoming
 -----------
 * updated changelogs
+* updated changelogs
+* Contributors: OnurDz
+
+* updated changelogs
 * Contributors: OnurDz
 
 0.2.5 (2016-08-16)
